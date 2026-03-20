@@ -153,6 +153,8 @@ protected:
     }
 
     this->yield();
+    this->bypassRelay();
+
     if (this->misc()) {
       this->yield();
     }
@@ -351,6 +353,73 @@ protected:
         }
       }
     }
+  }
+
+  void bypassRelay() {
+    static bool initialized = false;
+
+    #ifdef UMDU_BYPASS_RELAY_GPIO
+    static bool outputState = false;
+    constexpr uint8_t configuredGpio = UMDU_BYPASS_RELAY_GPIO;
+
+    if (!GPIO_IS_VALID(configuredGpio)) {
+      if (vars.bypassRelay.supported || vars.bypassRelay.state) {
+        vars.bypassRelay.supported = false;
+        vars.bypassRelay.state = false;
+        initialized = false;
+
+        Log.swarningln(
+          FPSTR(L_BYPASS),
+          F("Disabled: GPIO %hhu is not valid"),
+          configuredGpio
+        );
+      }
+
+      return;
+    }
+
+    if (!initialized) {
+      pinMode(configuredGpio, OUTPUT);
+      initialized = true;
+      outputState = !vars.bypassRelay.enabled;
+
+      Log.sinfoln(FPSTR(L_BYPASS), F("Initialized on GPIO %hhu"), configuredGpio);
+    }
+
+    if (!vars.bypassRelay.supported) {
+      vars.bypassRelay.supported = true;
+      Log.sinfoln(FPSTR(L_BYPASS), F("Hardware support enabled"));
+    }
+
+    bool state = vars.bypassRelay.enabled;
+    if (vars.emergency.state && settings.emergency.disableBypassRelay) {
+      state = false;
+    }
+
+    if (vars.bypassRelay.state != state) {
+      vars.bypassRelay.state = state;
+
+      Log.sinfoln(
+        FPSTR(L_BYPASS),
+        F("State changed to %s"),
+        vars.bypassRelay.state ? F("ON") : F("OFF")
+      );
+    }
+
+    if (outputState != vars.bypassRelay.state) {
+      outputState = vars.bypassRelay.state;
+      digitalWrite(configuredGpio, outputState ? LOW : HIGH);
+    }
+
+    #else
+    if (vars.bypassRelay.supported || vars.bypassRelay.state) {
+      vars.bypassRelay.supported = false;
+      vars.bypassRelay.state = false;
+      initialized = false;
+
+      Log.sinfoln(FPSTR(L_BYPASS), F("Disabled: UMDU_BYPASS_RELAY_GPIO is not configured"));
+    }
+    #endif
   }
 
   void ledStatus() {

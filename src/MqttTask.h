@@ -91,6 +91,8 @@ protected:
   std::unordered_map<uint8_t, unsigned long> prevPubSensorTime;
   bool connected = false;
   bool newConnection = false;
+  bool prevBypassRelayState = false;
+  bool hasPrevBypassRelayState = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -227,6 +229,12 @@ protected:
     #ifdef ARDUINO_ARCH_ESP8266
     ::optimistic_yield(1000);
     #endif
+
+    if (this->newConnection || !this->hasPrevBypassRelayState || this->prevBypassRelayState != vars.bypassRelay.state) {
+      this->publishBypassRelayState(this->haHelper->getDeviceTopic(F("bypassRelay/state")).c_str());
+      this->prevBypassRelayState = vars.bypassRelay.state;
+      this->hasPrevBypassRelayState = true;
+    }
 
     // publish variables and status
     if (this->newConnection || millis() - this->prevPubVarsTime > (settings.mqtt.interval * 1000u)) {
@@ -382,6 +390,7 @@ protected:
 
     this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic(F("bypassRelay/set")).c_str());
 
     // subscribe to manual sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
@@ -413,6 +422,37 @@ protected:
 
   void onMessage(const String& topic, uint8_t* payload, size_t length) {
     if (!length) {
+      return;
+    }
+
+    if (this->haHelper->getDeviceTopic(F("bypassRelay/set")).equals(topic)) {
+      bool changed = false;
+      String value;
+      value.reserve(length);
+
+      for (size_t i = 0; i < length; i++) {
+        value += static_cast<char>(payload[i]);
+      }
+
+      value.trim();
+      value.toUpperCase();
+
+      if (value.equals(F("ON")) && !vars.bypassRelay.enabled) {
+        vars.bypassRelay.enabled = true;
+        changed = true;
+
+      } else if (value.equals(F("OFF")) && vars.bypassRelay.enabled) {
+        vars.bypassRelay.enabled = false;
+        changed = true;
+      }
+
+      // delete topic
+      this->writer->publish(topic.c_str(), nullptr, 0, true);
+
+      if (changed) {
+        this->resetPublishedVarsTime();
+      }
+
       return;
     }
 
@@ -517,6 +557,8 @@ protected:
     this->haHelper->publishFaultState();
     this->haHelper->publishDiagState();
     this->haHelper->publishExternalPumpState(false);
+    this->haHelper->publishSwitchBypassRelay(true);
+    this->haHelper->publishBypassRelayState(true);
 
     // sensors
     this->haHelper->publishFaultCode();
@@ -647,5 +689,13 @@ protected:
     doc.shrinkToFit();
 
     return this->writer->publish(topic, doc, true);
+  }
+
+  bool publishBypassRelayState(const char* topic) {
+    return this->writer->publish(
+      topic,
+      vars.bypassRelay.state ? "ON" : "OFF",
+      true
+    );
   }
 };

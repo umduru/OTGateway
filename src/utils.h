@@ -486,6 +486,7 @@ void settingsToJson(const Settings& src, JsonVariant dst, bool safe = false) {
     auto emergency = dst[FPSTR(S_EMERGENCY)].to<JsonObject>();
     emergency[FPSTR(S_TARGET)] = roundf(src.emergency.target, 2);
     emergency[FPSTR(S_TRESHOLD_TIME)] = src.emergency.tresholdTime;
+    emergency[FPSTR(S_DISABLE_BYPASS_RELAY)] = src.emergency.disableBypassRelay;
   }
   
   auto heating = dst[FPSTR(S_HEATING)].to<JsonObject>();
@@ -1118,6 +1119,15 @@ bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false
 
       if (value >= 60 && value <= 1800 && value != dst.emergency.tresholdTime) {
         dst.emergency.tresholdTime = value;
+        changed = true;
+      }
+    }
+
+    if (src[FPSTR(S_EMERGENCY)][FPSTR(S_DISABLE_BYPASS_RELAY)].is<bool>()) {
+      bool value = src[FPSTR(S_EMERGENCY)][FPSTR(S_DISABLE_BYPASS_RELAY)].as<bool>();
+
+      if (value != dst.emergency.disableBypassRelay) {
+        dst.emergency.disableBypassRelay = value;
         changed = true;
       }
     }
@@ -2192,6 +2202,10 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   master[FPSTR(S_NETWORK)][FPSTR(S_RSSI)] = src.network.rssi;
   master[FPSTR(S_MQTT)][FPSTR(S_CONNECTED)] = src.mqtt.connected;
   master[FPSTR(S_EMERGENCY)][FPSTR(S_STATE)] = src.emergency.state;
+  auto mBypassRelay = master[FPSTR(S_BYPASS_RELAY)].to<JsonObject>();
+  mBypassRelay[FPSTR(S_SUPPORTED)] = src.bypassRelay.supported;
+  mBypassRelay[FPSTR(S_ENABLED)] = src.bypassRelay.enabled;
+  mBypassRelay[FPSTR(S_STATE)] = src.bypassRelay.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;
 
   auto mCascadeControl = master[FPSTR(S_CASCADE_CONTROL)].to<JsonObject>();
@@ -2215,6 +2229,14 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
 
   if (src[FPSTR(S_ACTIONS)][FPSTR(S_RESET_DIAGNOSTIC)].is<bool>() && src[FPSTR(S_ACTIONS)][FPSTR(S_RESET_DIAGNOSTIC)].as<bool>()) {
     dst.actions.resetDiagnostic = true;
+  }
+
+  if (src[FPSTR(S_BYPASS_RELAY)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_BYPASS_RELAY)][FPSTR(S_ENABLED)].as<bool>();
+    if (value != dst.bypassRelay.enabled) {
+      dst.bypassRelay.enabled = value;
+      changed = true;
+    }
   }
 
   return changed;

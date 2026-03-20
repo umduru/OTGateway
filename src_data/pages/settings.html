@@ -349,6 +349,14 @@
                 <small data-i18n>settings.emergency.desc</small>
               </fieldset>
 
+              <fieldset>
+                <label>
+                  <input type="checkbox" name="emergency[disableBypassRelay]" value="true">
+                  <span data-i18n>settings.emergency.disableBypassRelay.title</span>
+                </label>
+                <small data-i18n>settings.emergency.disableBypassRelay.note</small>
+              </fieldset>
+
               <div class="grid">
                 <label>
                   <span data-i18n>settings.emergency.target.title</span>
@@ -1225,6 +1233,7 @@
             });
           }
           setInputValue("[name='emergency[tresholdTime]']", data.emergency.tresholdTime);
+          setCheckboxValue("[name='emergency[disableBypassRelay]']", data.emergency.disableBypassRelay);
           setBusy('#emergency-settings-busy', '#emergency-settings', false);
 
           // Equitherm

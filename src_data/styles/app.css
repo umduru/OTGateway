@@ -153,6 +153,37 @@ tr.network:hover {
   padding: 0.5rem;
 }
 
+.control-grid {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .control-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .control-grid .tBypass {
+    grid-column: 1;
+    grid-row: 2;
+  }
+}
+
+.thermostat-simple {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "thermostat-header"
+    "thermostat-control";
+}
+
+.thermostat-simple .thermostat-header {
+  margin: 0 0 0.75rem 0;
+}
+
+.thermostat-simple .thermostat-control {
+  margin: 0;
+}
+
 .thermostat-header {
   justify-self: center;
   align-self: end;

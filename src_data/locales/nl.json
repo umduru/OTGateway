@@ -75,6 +75,12 @@
       "thermostat": {
         "heating": "Verwarming",
         "dhw": "Warm water",
+        "bypassRelay": "Bypass relay",
+        "bypassRelay.state": "Current mode",
+        "state": {
+          "on": "Via OTGateway",
+          "off": "External THERM"
+        },
         "temp.current": "Huidig",
         "enable": "Inschakelen",
         "turbo": "Turbomodus"
@@ -95,6 +101,7 @@
         "mMqttConnected": "MQTT-verbinding",
         "mEmergencyState": "Noodmodus",
         "mExtPumpState": "Externe pomp",
+        "mBypassRelayState": "Bypass relay",
         "mCascadeControlInput": "Cascaderegeling (ingang)",
         "mCascadeControlOutput": "Cascaderegeling (uitgang)",
         "sConnected": "OpenTherm-verbinding",
@@ -347,7 +354,11 @@
           "title": "Doeltemperatuur",
           "note": "<b>Belangrijk:</b> <u>Doel binnentemperatuur</u> als OT-optie <i>«Natuurlijke verwarmingsregeling»</i> is ingeschakeld.<br />In alle andere gevallen, de <u>doel warmtedragertemperatuur</u>."
         },
-        "treshold": "Drempeltijd <small>(sec)</small>"
+        "treshold": "Drempeltijd <small>(sec)</small>",
+        "disableBypassRelay": {
+          "title": "Disable bypass relay in emergency mode",
+          "note": "When enabled, emergency mode drives bypass relay GPIO to <code>HIGH</code>, turns relay off, and switches boiler control to external thermostat connected to THERM terminals."
+        }
       },
       "equitherm": {
         "slope": {

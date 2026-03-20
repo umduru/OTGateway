@@ -82,6 +82,12 @@
       "thermostat": {
         "heating": "供暖",
         "dhw": "生活热水",
+        "bypassRelay": "Bypass relay",
+        "bypassRelay.state": "Current mode",
+        "state": {
+          "on": "Via OTGateway",
+          "off": "External THERM"
+        },
         "temp.current": "当前温度",
         "enable": "启用",
         "turbo": "Turbo 模式"
@@ -104,6 +110,7 @@
         "mMqttConnected": "MQTT服务器连接状态",
         "mEmergencyState": "应急模式",
         "mExtPumpState": "外置循环泵",
+        "mBypassRelayState": "Bypass relay",
         "mCascadeControlInput": "Cascade 控制 (input)",
         "mCascadeControlOutput": "Cascade 控制 (output)",
 
@@ -377,7 +384,11 @@
           "title": "目标温度",
           "note": "<b>重要提示：</b> 若启用OpenTherm选项 <i>«原生供暖控制»</i>，此处设定值为<u>目标室内温度</u>；<br />其他所有情况下，此处设定值为 <u>目标热媒出水温度</u>."
         },
-        "treshold": "阈值时间 <small>(秒)</small>"
+        "treshold": "阈值时间 <small>(秒)</small>",
+        "disableBypassRelay": {
+          "title": "Disable bypass relay in emergency mode",
+          "note": "When enabled, emergency mode drives bypass relay GPIO to <code>HIGH</code>, turns relay off, and switches boiler control to external thermostat connected to THERM terminals."
+        }
       },
 
       "equitherm": {

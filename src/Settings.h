@@ -98,6 +98,7 @@ struct Settings {
   struct {
     float target = DEFAULT_HEATING_TARGET_TEMP;
     unsigned short tresholdTime = 120;
+    bool disableBypassRelay = false;
   } emergency;
 
   struct {
@@ -281,6 +282,12 @@ struct Variables {
   struct {
     bool state = false;
   } emergency;
+
+  struct {
+    bool supported = false;
+    bool enabled = true;
+    bool state = true;
+  } bypassRelay;
 
   struct {
     bool state = false;

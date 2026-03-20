@@ -42,7 +42,7 @@
         <div id="dashboard-container" class="hidden">
           <details open>
             <summary><b data-i18n>dashboard.section.control</b></summary>
-            <div class="grid">
+            <div class="grid control-grid">
               <div class="thermostat tHeat" data-purpose="heating" data-min="0" data-max="100" data-step="0.1" data-big-step="1">
                 <div class="thermostat-header" data-i18n>dashboard.thermostat.heating</div>
                 <div class="thermostat-temp">
@@ -79,6 +79,14 @@
                 <div class="thermostat-control">
                   <input type="checkbox" role="switch" id="tDhwEnabled" value="true">
                   <label htmlFor="tDhwEnabled" data-i18n>dashboard.thermostat.enable</label>
+                </div>
+              </div>
+
+              <div class="thermostat tBypass thermostat-simple hidden">
+                <div class="thermostat-header" data-i18n>dashboard.thermostat.bypassRelay</div>
+                <div class="thermostat-control">
+                  <input type="checkbox" role="switch" id="tBypassEnabled" value="true">
+                  <label htmlFor="tBypassEnabled" data-i18n>dashboard.thermostat.enable</label>
                 </div>
               </div>
             </div>
@@ -135,6 +143,10 @@
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mExtPumpState</th>
                   <td><i class="mExtPumpState"></i></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.mBypassRelayState</th>
+                  <td><i class="mBypassRelayState"></i></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mCascadeControlInput</th>
@@ -306,6 +318,7 @@
     <script>
       let modifiedTime = null;
       let prevSettings;
+      let prevVars;
       let newSettings = {
         heating: {
           enable: false,
@@ -317,6 +330,12 @@
           target: 0
         }
       };
+      let newVars = {
+        bypassRelay: {
+          enabled: true
+        }
+      };
+      let bypassRelaySyncing = false;
 
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
@@ -400,6 +419,42 @@
         document.querySelector('#tDhwEnabled').addEventListener('change', (event) => {
           modifiedTime = Date.now();
           newSettings.dhw.enabled = event.currentTarget.checked;
+        });
+
+        document.querySelector('#tBypassEnabled').addEventListener('change', async (event) => {
+          if (bypassRelaySyncing) {
+            return;
+          }
+
+          const enabled = event.currentTarget.checked;
+          newVars.bypassRelay.enabled = enabled;
+
+          try {
+            const response = await fetch("/api/vars", {
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                bypassRelay: {
+                  enabled
+                }
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+
+            if (prevVars && prevVars.master && prevVars.master.bypassRelay) {
+              prevVars.master.bypassRelay.enabled = enabled;
+            }
+
+          } catch (error) {
+            console.log(error);
+          }
         });
 
         document.querySelector('.notify-fault .reset').addEventListener('click', async (event) => {
@@ -530,6 +585,23 @@
 
           // vars
           try {
+            let modifiedVars = prevVars
+              && prevVars.master
+              && prevVars.master.bypassRelay
+              && (prevVars.master.bypassRelay.enabled != newVars.bypassRelay.enabled);
+
+            if (modifiedVars) {
+              await fetch("/api/vars", {
+                method: "POST",
+                cache: "no-cache",
+                credentials: "include",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify(newVars)
+              });
+            }
+
             const response = await fetch("/api/vars", {
               cache: "no-cache",
               credentials: "include"
@@ -540,6 +612,7 @@
             }
 
             const result = await response.json();
+            prevVars = result;
 
             // Graph
             setValue('#tHeatCurrentTemp', result.master.heating.indoorTempControl
@@ -665,6 +738,29 @@
               result.master.emergency.state ? "success" : "error",
               result.master.emergency.state ? "red" : "green"
             );
+            if (result.master.bypassRelay != undefined) {
+              newVars.bypassRelay.enabled = result.master.bypassRelay.enabled;
+              const bypassRelayInput = document.querySelector('#tBypassEnabled');
+              if (bypassRelayInput) {
+                bypassRelaySyncing = true;
+                bypassRelayInput.checked = result.master.bypassRelay.enabled;
+                bypassRelaySyncing = false;
+              }
+              setState('.mBypassRelayState', result.master.bypassRelay.state);
+
+              if (result.master.bypassRelay.supported) {
+                show('.tBypass');
+                document.querySelector('#tBypassEnabled').removeAttribute('disabled');
+              } else {
+                hide('.tBypass');
+                document.querySelector('#tBypassEnabled').setAttribute('disabled', true);
+                setState('.mBypassRelayState', false);
+              }
+            } else {
+              hide('.tBypass');
+              setState('.mBypassRelayState', false);
+            }
+
             setState('.mExtPumpState', result.master.externalPump.state);
             setState('.mCascadeControlInput', result.master.cascadeControl.input);
             setState('.mCascadeControlOutput', result.master.cascadeControl.output);
