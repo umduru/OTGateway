@@ -169,7 +169,11 @@ struct Settings {
 
   struct {
     bool use = false;
+    #ifdef UMDU_DRY_CONTACT_GPIO
+    uint8_t gpio = UMDU_DRY_CONTACT_GPIO;
+    #else
     uint8_t gpio = DEFAULT_EXT_PUMP_GPIO;
+    #endif
     bool invertState = false;
     unsigned short postCirculationTime = 600;
     unsigned int antiStuckInterval = 2592000;
@@ -186,7 +190,11 @@ struct Settings {
 
     struct {
       bool enabled = false;
+      #ifdef UMDU_DRY_CONTACT_GPIO
+      uint8_t gpio = UMDU_DRY_CONTACT_GPIO;
+      #else
       uint8_t gpio = GPIO_IS_NOT_CONFIGURED;
+      #endif
       bool invertState = false;
       unsigned short thresholdTime = 60;
       bool onFault = true;
@@ -293,6 +301,13 @@ struct Variables {
     bool state = false;
     unsigned long lastEnabledTime = 0;
   } externalPump;
+
+  struct {
+    bool supported = false;
+    bool enabled = false;
+    bool state = false;
+    uint8_t source = 0;
+  } dryContact;
 
   struct {
     bool input = false;

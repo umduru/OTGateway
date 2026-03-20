@@ -89,6 +89,14 @@
                   <label htmlFor="tBypassEnabled" data-i18n>dashboard.thermostat.enable</label>
                 </div>
               </div>
+
+              <div class="thermostat tDryContact thermostat-simple hidden">
+                <div class="thermostat-header" data-i18n>dashboard.thermostat.dryContact</div>
+                <div class="thermostat-control">
+                  <input type="checkbox" role="switch" id="tDryContactEnabled" value="true">
+                  <label htmlFor="tDryContactEnabled" data-i18n>dashboard.thermostat.enable</label>
+                </div>
+              </div>
             </div>
 
             <div class="notify notify-error notify-fault hidden">
@@ -147,6 +155,14 @@
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mBypassRelayState</th>
                   <td><i class="mBypassRelayState"></i></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.mDryContactState</th>
+                  <td><i class="mDryContactState"></i></td>
+                </tr>
+                <tr>
+                  <th scope="row" data-i18n>dashboard.states.mDryContactSource</th>
+                  <td><b class="mDryContactSource"></b></td>
                 </tr>
                 <tr>
                   <th scope="row" data-i18n>dashboard.states.mCascadeControlInput</th>
@@ -333,9 +349,20 @@
       let newVars = {
         bypassRelay: {
           enabled: true
+        },
+        dryContact: {
+          enabled: false
         }
       };
       let bypassRelaySyncing = false;
+      let dryContactSyncing = false;
+
+      const getDryContactSourceLabel = (source) => {
+        const normalized = source || 'manual';
+        const i18nKey = `dashboard.states.dryContactSource.${normalized}`;
+        const value = i18n(i18nKey);
+        return value == i18nKey ? normalized : value;
+      };
 
       document.addEventListener('DOMContentLoaded', async () => {
         const lang = new Lang(document.getElementById('lang'));
@@ -450,6 +477,46 @@
 
             if (prevVars && prevVars.master && prevVars.master.bypassRelay) {
               prevVars.master.bypassRelay.enabled = enabled;
+            }
+
+          } catch (error) {
+            console.log(error);
+          }
+        });
+
+        document.querySelector('#tDryContactEnabled').addEventListener('change', async (event) => {
+          if (dryContactSyncing) {
+            return;
+          }
+
+          if (event.currentTarget.disabled) {
+            return;
+          }
+
+          const enabled = event.currentTarget.checked;
+          newVars.dryContact.enabled = enabled;
+
+          try {
+            const response = await fetch("/api/vars", {
+              method: "POST",
+              cache: "no-cache",
+              credentials: "include",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                dryContact: {
+                  enabled
+                }
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('Response not valid');
+            }
+
+            if (prevVars && prevVars.master && prevVars.master.dryContact) {
+              prevVars.master.dryContact.enabled = enabled;
             }
 
           } catch (error) {
@@ -587,8 +654,10 @@
           try {
             let modifiedVars = prevVars
               && prevVars.master
-              && prevVars.master.bypassRelay
-              && (prevVars.master.bypassRelay.enabled != newVars.bypassRelay.enabled);
+              && (
+                (prevVars.master.bypassRelay && prevVars.master.bypassRelay.enabled != newVars.bypassRelay.enabled)
+                || (prevVars.master.dryContact && prevVars.master.dryContact.enabled != newVars.dryContact.enabled)
+              );
 
             if (modifiedVars) {
               await fetch("/api/vars", {
@@ -759,6 +828,47 @@
             } else {
               hide('.tBypass');
               setState('.mBypassRelayState', false);
+            }
+
+            if (result.master.dryContact != undefined) {
+              newVars.dryContact.enabled = result.master.dryContact.enabled;
+              const dryContactManualControl = !!result.master.dryContact.manualControl;
+              const dryContactInput = document.querySelector('#tDryContactEnabled');
+              const dryContactNode = document.querySelector('.tDryContact');
+              if (dryContactInput) {
+                dryContactSyncing = true;
+                dryContactInput.checked = result.master.dryContact.state;
+                dryContactSyncing = false;
+              }
+              setState('.mDryContactState', result.master.dryContact.state);
+              setValue('.mDryContactSource', getDryContactSourceLabel(result.master.dryContact.source));
+
+              if (result.master.dryContact.supported) {
+                show('.tDryContact');
+                if (dryContactManualControl) {
+                  document.querySelector('#tDryContactEnabled').removeAttribute('disabled');
+                  if (dryContactNode) {
+                    dryContactNode.classList.remove('thermostat-locked');
+                  }
+                } else {
+                  document.querySelector('#tDryContactEnabled').setAttribute('disabled', true);
+                  if (dryContactNode) {
+                    dryContactNode.classList.add('thermostat-locked');
+                  }
+                }
+              } else {
+                hide('.tDryContact');
+                document.querySelector('#tDryContactEnabled').setAttribute('disabled', true);
+                setState('.mDryContactState', false);
+                setValue('.mDryContactSource', getDryContactSourceLabel('manual'));
+                if (dryContactNode) {
+                  dryContactNode.classList.add('thermostat-locked');
+                }
+              }
+            } else {
+              hide('.tDryContact');
+              setState('.mDryContactState', false);
+              setValue('.mDryContactSource', getDryContactSourceLabel('manual'));
             }
 
             setState('.mExtPumpState', result.master.externalPump.state);

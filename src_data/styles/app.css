@@ -166,6 +166,11 @@ tr.network:hover {
     grid-column: 1;
     grid-row: 2;
   }
+
+  .control-grid .tDryContact {
+    grid-column: 2;
+    grid-row: 2;
+  }
 }
 
 .thermostat-simple {
@@ -182,6 +187,11 @@ tr.network:hover {
 
 .thermostat-simple .thermostat-control {
   margin: 0;
+}
+
+.thermostat-locked {
+  opacity: 0.6;
+  filter: grayscale(0.9);
 }
 
 .thermostat-header {
@@ -243,6 +253,12 @@ tr.network:hover {
   grid-area: thermostat-control;
 
   margin: 1.25rem 0;
+}
+
+.form-error {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--pico-form-element-invalid-border-color);
 }
 
 

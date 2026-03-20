@@ -284,6 +284,16 @@ protected:
         return;
       }
 
+      Settings nextSettings = settings;
+      bool changedSettings = false;
+      if (!doc[FPSTR(S_SETTINGS)].isNull()) {
+        changedSettings = jsonToSettings(doc[FPSTR(S_SETTINGS)], nextSettings);
+        if (isAutoRelayModeConflict(nextSettings)) {
+          this->sendAutoRelayModeConflict();
+          return;
+        }
+      }
+
       bool changed = false;
       if (!doc[FPSTR(S_NETWORK)].isNull() && jsonToNetworkSettings(doc[FPSTR(S_NETWORK)], networkSettings)) {
         fsNetworkSettings.update();
@@ -300,7 +310,8 @@ protected:
         changed = true;
       }
 
-      if (!doc[FPSTR(S_SETTINGS)].isNull() && jsonToSettings(doc[FPSTR(S_SETTINGS)], settings)) {
+      if (changedSettings) {
+        settings = nextSettings;
         fsSettings.update();
         changed = true;
       }
@@ -487,7 +498,18 @@ protected:
         return;
       }
 
-      bool changed = jsonToSettings(doc, settings);
+      Settings nextSettings = settings;
+      bool changed = jsonToSettings(doc, nextSettings);
+
+      if (isAutoRelayModeConflict(nextSettings)) {
+        this->sendAutoRelayModeConflict();
+        return;
+      }
+
+      if (changed) {
+        settings = nextSettings;
+      }
+
       doc.clear();
       doc.shrinkToFit();
 
@@ -984,6 +1006,15 @@ protected:
 
   bool isValidCredentials() {
     return this->webServer->authenticate(settings.portal.login, settings.portal.password);
+  }
+
+  void sendAutoRelayModeConflict() {
+    JsonDocument errorDoc;
+    errorDoc[FPSTR(S_CODE)] = F("MODE_CONFLICT_AUTO_RELAY");
+    errorDoc[FPSTR(S_MESSAGE)] = F("Only one mode can control relay at the same time: external pump or cascade output.");
+    errorDoc.shrinkToFit();
+
+    this->bufferedWebServer->send(409, F("application/json"), errorDoc);
   }
 
   void onCaptivePortal() {

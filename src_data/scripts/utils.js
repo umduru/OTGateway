@@ -21,12 +21,23 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
     const url = form.action;
     let button = form.querySelector('button[type="submit"]');
     let defaultText;
+    let errorNode = form.querySelector('.form-error');
+    if (!errorNode) {
+      errorNode = document.createElement('small');
+      errorNode.classList.add('form-error', 'hidden');
+      form.appendChild(errorNode);
+    }
 
     if (button) {
       defaultText = button.textContent;
       button.textContent = i18n("button.wait");
       button.setAttribute('disabled', true);
       button.setAttribute('aria-busy', true);
+    }
+
+    if (errorNode) {
+      errorNode.classList.add('hidden');
+      errorNode.textContent = '';
     }
 
     const onSuccess = (result) => {
@@ -41,9 +52,14 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
           button.textContent = defaultText;
         }, 5000);
       }
+
+      if (errorNode) {
+        errorNode.classList.add('hidden');
+        errorNode.textContent = '';
+      }
     };
 
-    const onFailed = () => {
+    const onFailed = (errorText = '') => {
       if (button) {
         button.textContent = i18n('button.error');
         button.classList.add('failed');
@@ -54,6 +70,16 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
           button.classList.remove('success', 'failed');
           button.textContent = defaultText;
         }, 5000);
+      }
+
+      if (errorNode) {
+        if (errorText) {
+          errorNode.textContent = errorText;
+          errorNode.classList.remove('hidden');
+        } else {
+          errorNode.classList.add('hidden');
+          errorNode.textContent = '';
+        }
       }
     };
 
@@ -75,7 +101,21 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
       });
 
       if (!response.ok) {
-        throw new Error('Response not valid');
+        let errorText = '';
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.code == 'MODE_CONFLICT_AUTO_RELAY') {
+            errorText = i18n('settings.validation.modeConflict');
+          } else if (errorData && errorData.message) {
+            errorText = errorData.message;
+          }
+        } catch (err) {}
+
+        if (!errorText && response.status == 409) {
+          errorText = i18n('settings.validation.modeConflict');
+        }
+
+        throw new Error(errorText || 'Response not valid');
       }
 
       const result = response.status != 204 ? (await response.json()) : null;
@@ -87,7 +127,7 @@ const setupForm = (formSelector, onResultCallback = null, noCastItems = []) => {
 
     } catch (err) {
       console.log(err);
-      onFailed();
+      onFailed(err && err.message != 'Response not valid' ? err.message : '');
     }
   });
 }

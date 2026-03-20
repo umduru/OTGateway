@@ -27,6 +27,7 @@ public:
 
 protected:
   enum class PumpStartReason {NONE, HEATING, ANTISTUCK};
+  enum class DryContactSource : uint8_t {NONE = 0, MANUAL = 1, EXTERNAL_PUMP = 2, CASCADE_OUTPUT = 3};
 
   Blinker* blinker = nullptr;
   unsigned long miscRunned = 0;
@@ -195,8 +196,10 @@ protected:
       ESP.restart();
     }
 
+    this->ensureAutoRelayModeExclusivity();
     this->heating();
     this->emergency();
+    this->dryContact();
     this->cascadeControl();
     this->externalPump();
     this->miscRunned = millis();
@@ -422,6 +425,147 @@ protected:
     #endif
   }
 
+  const __FlashStringHelper* dryContactSourceToString(DryContactSource source) {
+    switch (source) {
+      case DryContactSource::MANUAL:
+        return F("manual");
+      case DryContactSource::EXTERNAL_PUMP:
+        return F("externalPump");
+      case DryContactSource::CASCADE_OUTPUT:
+        return F("cascadeOutput");
+      default:
+        return F("none");
+    }
+  }
+
+  bool isDryContactGpio(uint8_t gpio) {
+    #ifdef UMDU_DRY_CONTACT_GPIO
+    return GPIO_IS_VALID(UMDU_DRY_CONTACT_GPIO) && gpio == UMDU_DRY_CONTACT_GPIO;
+    #else
+    (void) gpio;
+    return false;
+    #endif
+  }
+
+  bool applyDryContactState(bool state, DryContactSource source) {
+    static bool initialized = false;
+    static bool outputState = false;
+
+    #ifdef UMDU_DRY_CONTACT_GPIO
+    constexpr uint8_t configuredGpio = UMDU_DRY_CONTACT_GPIO;
+
+    if (!GPIO_IS_VALID(configuredGpio)) {
+      if (vars.dryContact.supported || vars.dryContact.state || vars.dryContact.source != static_cast<uint8_t>(DryContactSource::NONE)) {
+        vars.dryContact.supported = false;
+        vars.dryContact.state = false;
+        vars.dryContact.source = static_cast<uint8_t>(DryContactSource::NONE);
+        initialized = false;
+
+        Log.swarningln(
+          FPSTR(L_DRY_CONTACT),
+          F("Disabled: GPIO %hhu is not valid"),
+          configuredGpio
+        );
+      }
+
+      return false;
+    }
+
+    if (!initialized) {
+      pinMode(configuredGpio, OUTPUT);
+      initialized = true;
+      outputState = !state;
+
+      Log.sinfoln(FPSTR(L_DRY_CONTACT), F("Initialized on GPIO %hhu"), configuredGpio);
+    }
+
+    if (!vars.dryContact.supported) {
+      vars.dryContact.supported = true;
+      Log.sinfoln(FPSTR(L_DRY_CONTACT), F("Hardware support enabled"));
+    }
+
+    if (vars.dryContact.state != state || vars.dryContact.source != static_cast<uint8_t>(source)) {
+      vars.dryContact.state = state;
+      vars.dryContact.source = static_cast<uint8_t>(source);
+
+      // Keep manual value in sync while auto mode owns K1 to avoid unexpected jump
+      // when returning back from auto mode to manual mode.
+      if (source != DryContactSource::MANUAL) {
+        vars.dryContact.enabled = vars.dryContact.state;
+      }
+
+      Log.sinfoln(
+        FPSTR(L_DRY_CONTACT),
+        F("State changed to %s by %s"),
+        vars.dryContact.state ? F("ON") : F("OFF"),
+        this->dryContactSourceToString(source)
+      );
+    }
+
+    if (outputState != vars.dryContact.state) {
+      outputState = vars.dryContact.state;
+      digitalWrite(configuredGpio, outputState ? HIGH : LOW);
+    }
+
+    return true;
+
+    #else
+    if (vars.dryContact.supported || vars.dryContact.state || vars.dryContact.source != static_cast<uint8_t>(DryContactSource::NONE)) {
+      vars.dryContact.supported = false;
+      vars.dryContact.state = false;
+      vars.dryContact.source = static_cast<uint8_t>(DryContactSource::NONE);
+      initialized = false;
+
+      Log.sinfoln(FPSTR(L_DRY_CONTACT), F("Disabled: UMDU_DRY_CONTACT_GPIO is not configured"));
+    }
+
+    (void) state;
+    (void) source;
+    return false;
+    #endif
+  }
+
+  void dryContact() {
+    static bool initialized = false;
+    static bool prevEnabled = false;
+
+    if (!isDryContactManualControlAllowed(settings)) {
+      initialized = false;
+      prevEnabled = vars.dryContact.enabled;
+      return;
+    }
+
+    if (!initialized || prevEnabled != vars.dryContact.enabled) {
+      prevEnabled = vars.dryContact.enabled;
+      initialized = true;
+
+      this->applyDryContactState(vars.dryContact.enabled, DryContactSource::MANUAL);
+    }
+  }
+
+  void releaseDryContactToManualOff() {
+    vars.dryContact.enabled = false;
+    this->applyDryContactState(false, DryContactSource::MANUAL);
+  }
+
+  void ensureAutoRelayModeExclusivity() {
+    if (!isAutoRelayModeConflict(settings)) {
+      return;
+    }
+
+    settings.cascadeControl.output.enabled = false;
+    fsSettings.update();
+
+    if (tMqtt != nullptr) {
+      tMqtt->resetPublishedSettingsTime();
+    }
+
+    Log.swarningln(
+      FPSTR(L_MAIN),
+      F("Legacy settings conflict detected: cascade output disabled because external pump is enabled")
+    );
+  }
+
   void ledStatus() {
     uint8_t errors[4];
     uint8_t errCount = 0;
@@ -578,21 +722,36 @@ protected:
     if (settings.cascadeControl.output.enabled) {
       if (settings.cascadeControl.output.gpio != configuredOutputGpio) {
         if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
-          pinMode(configuredOutputGpio, OUTPUT);
-          digitalWrite(configuredOutputGpio, LOW);
+          if (this->isDryContactGpio(configuredOutputGpio)) {
+            if (vars.dryContact.source == static_cast<uint8_t>(DryContactSource::CASCADE_OUTPUT)) {
+              this->releaseDryContactToManualOff();
+            }
+
+          } else {
+            pinMode(configuredOutputGpio, OUTPUT);
+            digitalWrite(configuredOutputGpio, LOW);
+          }
 
           Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Deinitialized on GPIO %hhu"), configuredOutputGpio);
         }
         
         if (GPIO_IS_VALID(settings.cascadeControl.output.gpio)) {
           configuredOutputGpio = settings.cascadeControl.output.gpio;
-          pinMode(configuredOutputGpio, OUTPUT);
-          digitalWrite(
-            configuredOutputGpio,
-            settings.cascadeControl.output.invertState
-              ? HIGH 
-              : LOW
-          );
+          if (!this->isDryContactGpio(configuredOutputGpio)) {
+            pinMode(configuredOutputGpio, OUTPUT);
+            digitalWrite(
+              configuredOutputGpio,
+              settings.cascadeControl.output.invertState
+                ? HIGH
+                : LOW
+            );
+
+          } else {
+            this->applyDryContactState(
+              vars.cascadeControl.output ^ settings.cascadeControl.output.invertState,
+              DryContactSource::CASCADE_OUTPUT
+            );
+          }
 
           Log.sinfoln(FPSTR(L_CASCADE_OUTPUT), F("Initialized on GPIO %hhu"), configuredOutputGpio);
 
@@ -623,12 +782,18 @@ protected:
           } else if (millis() - outputChangedTs >= settings.cascadeControl.output.thresholdTime * 1000u) {
             vars.cascadeControl.output = value;
 
-            digitalWrite(
-              configuredOutputGpio,
-              vars.cascadeControl.output ^ settings.cascadeControl.output.invertState
-                ? HIGH
-                : LOW
-            );
+            bool relayState = vars.cascadeControl.output ^ settings.cascadeControl.output.invertState;
+            if (this->isDryContactGpio(configuredOutputGpio)) {
+              this->applyDryContactState(relayState, DryContactSource::CASCADE_OUTPUT);
+
+            } else {
+              digitalWrite(
+                configuredOutputGpio,
+                relayState
+                  ? HIGH
+                  : LOW
+              );
+            }
 
             Log.sinfoln(
               FPSTR(L_CASCADE_OUTPUT),
@@ -647,7 +812,7 @@ protected:
       if (vars.cascadeControl.output) {
         vars.cascadeControl.output = false;
 
-        if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED) {
+        if (configuredOutputGpio != GPIO_IS_NOT_CONFIGURED && !this->isDryContactGpio(configuredOutputGpio)) {
           digitalWrite(
             configuredOutputGpio,
             vars.cascadeControl.output ^ settings.cascadeControl.output.invertState
@@ -662,6 +827,14 @@ protected:
           vars.cascadeControl.output ? F("TRUE") : F("FALSE")
         );
       }
+
+      if (
+        configuredOutputGpio != GPIO_IS_NOT_CONFIGURED
+        && this->isDryContactGpio(configuredOutputGpio)
+        && vars.dryContact.source == static_cast<uint8_t>(DryContactSource::CASCADE_OUTPUT)
+      ) {
+        this->releaseDryContactToManualOff();
+      }
     }
   }
 
@@ -670,23 +843,40 @@ protected:
 
     if (settings.externalPump.gpio != configuredGpio) {
       if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
-        digitalWrite(configuredGpio, LOW);
+        if (this->isDryContactGpio(configuredGpio)) {
+          if (vars.dryContact.source == static_cast<uint8_t>(DryContactSource::EXTERNAL_PUMP)) {
+            this->releaseDryContactToManualOff();
+          }
+
+        } else {
+          digitalWrite(configuredGpio, LOW);
+        }
       }
       
       if (GPIO_IS_VALID(settings.externalPump.gpio)) {
         configuredGpio = settings.externalPump.gpio;
-        pinMode(configuredGpio, OUTPUT);
-        digitalWrite(
-          configuredGpio,
-          settings.externalPump.invertState
-            ? HIGH 
-            : LOW
-        );
+        if (!this->isDryContactGpio(configuredGpio)) {
+          pinMode(configuredGpio, OUTPUT);
+          digitalWrite(
+            configuredGpio,
+            settings.externalPump.invertState
+              ? HIGH
+              : LOW
+          );
+
+        } else if (settings.externalPump.use) {
+          this->applyDryContactState(
+            vars.externalPump.state ^ settings.externalPump.invertState,
+            DryContactSource::EXTERNAL_PUMP
+          );
+        }
 
       } else if (configuredGpio != GPIO_IS_NOT_CONFIGURED) {
         configuredGpio = GPIO_IS_NOT_CONFIGURED;
       }
     }
+
+    const bool useDryContactOutput = this->isDryContactGpio(configuredGpio);
 
     if (configuredGpio == GPIO_IS_NOT_CONFIGURED) {
       if (vars.externalPump.state) {
@@ -709,12 +899,17 @@ protected:
     
     if (!settings.externalPump.use) {
       if (vars.externalPump.state) {
-        digitalWrite(
-          configuredGpio,
-          settings.externalPump.invertState
-            ? HIGH 
-            : LOW
-        );
+        if (useDryContactOutput) {
+          this->releaseDryContactToManualOff();
+
+        } else {
+          digitalWrite(
+            configuredGpio,
+            settings.externalPump.invertState
+              ? HIGH
+              : LOW
+          );
+        }
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -722,17 +917,30 @@ protected:
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: use = off"));
       }
 
+      if (
+        useDryContactOutput
+        && vars.dryContact.source == static_cast<uint8_t>(DryContactSource::EXTERNAL_PUMP)
+      ) {
+        this->releaseDryContactToManualOff();
+      }
+
       return;
     }
 
     if (vars.externalPump.state && !this->heatingEnabled) {
       if (this->extPumpStartReason == MainTask::PumpStartReason::HEATING && millis() - this->heatingDisabledTime > (settings.externalPump.postCirculationTime * 1000u)) {
-        digitalWrite(
-          configuredGpio,
-          settings.externalPump.invertState
-            ? HIGH 
-            : LOW
-        );
+        bool relayState = false ^ settings.externalPump.invertState;
+        if (useDryContactOutput) {
+          this->applyDryContactState(relayState, DryContactSource::EXTERNAL_PUMP);
+
+        } else {
+          digitalWrite(
+            configuredGpio,
+            relayState
+              ? HIGH
+              : LOW
+          );
+        }
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -740,12 +948,18 @@ protected:
         Log.sinfoln(FPSTR(L_EXTPUMP), F("Disabled: expired post circulation time"));
 
       } else if (this->extPumpStartReason == MainTask::PumpStartReason::ANTISTUCK && millis() - this->externalPumpStartTime >= (settings.externalPump.antiStuckTime * 1000u)) {
-        digitalWrite(
-          configuredGpio,
-          settings.externalPump.invertState
-            ? HIGH 
-            : LOW
-        );
+        bool relayState = false ^ settings.externalPump.invertState;
+        if (useDryContactOutput) {
+          this->applyDryContactState(relayState, DryContactSource::EXTERNAL_PUMP);
+
+        } else {
+          digitalWrite(
+            configuredGpio,
+            relayState
+              ? HIGH
+              : LOW
+          );
+        }
 
         vars.externalPump.state = false;
         vars.externalPump.lastEnabledTime = millis();
@@ -761,12 +975,18 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::HEATING;
 
-      digitalWrite(
-        configuredGpio,
-        settings.externalPump.invertState
-          ? LOW 
-          : HIGH
-      );
+      bool relayState = vars.externalPump.state ^ settings.externalPump.invertState;
+      if (useDryContactOutput) {
+        this->applyDryContactState(relayState, DryContactSource::EXTERNAL_PUMP);
+
+      } else {
+        digitalWrite(
+          configuredGpio,
+          relayState
+            ? HIGH
+            : LOW
+        );
+      }
 
       Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: heating on"));
 
@@ -775,12 +995,18 @@ protected:
       this->externalPumpStartTime = millis();
       this->extPumpStartReason = MainTask::PumpStartReason::ANTISTUCK;
 
-      digitalWrite(
-        configuredGpio,
-        settings.externalPump.invertState
-          ? LOW 
-          : HIGH
-      );
+      bool relayState = vars.externalPump.state ^ settings.externalPump.invertState;
+      if (useDryContactOutput) {
+        this->applyDryContactState(relayState, DryContactSource::EXTERNAL_PUMP);
+
+      } else {
+        digitalWrite(
+          configuredGpio,
+          relayState
+            ? HIGH
+            : LOW
+        );
+      }
 
       Log.sinfoln(FPSTR(L_EXTPUMP), F("Enabled: anti stuck"));
     }

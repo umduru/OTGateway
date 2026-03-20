@@ -789,15 +789,19 @@
           <div>
             <div id="extpump-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="extpump-settings" class="hidden">
+              <small data-i18n>settings.modeConflict.note</small>
+
               <fieldset>
                 <label>
                   <input type="checkbox" name="externalPump[use]" value="true">
                   <span data-i18n>settings.extPump.use</span>
+                  <br />
+                  <small data-i18n>settings.extPump.desc</small>
                 </label>
 
                 <label>
                   <input type="checkbox" name="externalPump[invertState]" value="true">
-                  <span data-i18n>settings.externalPump.invertState</span>
+                  <span data-i18n>settings.extPump.invertState</span>
                 </label>
               </fieldset>
 
@@ -826,6 +830,7 @@
               </div>
 
               <button type="submit" data-i18n>button.save</button>
+              <small class="form-error hidden"></small>
             </form>
           </div>
         </details>
@@ -837,6 +842,8 @@
           <div>
             <div id="cc-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="cc-settings" class="hidden">
+              <small data-i18n>settings.modeConflict.note</small>
+
               <fieldset>
                 <label>
                   <input type="checkbox" name="cascadeControl[input][enabled]" value="true">
@@ -911,6 +918,7 @@
               </fieldset>
 
               <button type="submit" data-i18n>button.save</button>
+              <small class="form-error hidden"></small>
             </form>
           </div>
         </details>

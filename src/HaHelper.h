@@ -1180,6 +1180,70 @@ public:
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("bypass_relay_state")).c_str(), doc);
   }
 
+  bool publishSwitchDryContact(bool enabledByDefault = true) {
+    String commandTopic = this->getDeviceTopic(F("dryContact/set"));
+
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.manualControl, 'online', 'offline') }}");
+    doc[FPSTR(HA_AVAILABILITY_MODE)] = F("all");
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("dry_contact"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
+    doc[FPSTR(HA_NAME)] = F("Dry contact (K1)");
+    doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.state, 'ON', 'OFF') }}");
+    doc[FPSTR(HA_STATE_ON)] = F("ON");
+    doc[FPSTR(HA_STATE_OFF)] = F("OFF");
+    doc[FPSTR(HA_COMMAND_TOPIC)] = commandTopic.c_str();
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("ON");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("OFF");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SWITCH), F("dry_contact")).c_str(), doc);
+  }
+
+  bool publishDryContactState(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact_state"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dry_contact_state"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
+    doc[FPSTR(HA_NAME)] = F("Dry contact state");
+    doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.state, 'ON', 'OFF') }}");
+    doc[FPSTR(HA_PAYLOAD_ON)] = F("ON");
+    doc[FPSTR(HA_PAYLOAD_OFF)] = F("OFF");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dry_contact_state")).c_str(), doc);
+  }
+
+  bool publishDryContactSource(bool enabledByDefault = true) {
+    JsonDocument doc;
+    doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
+    doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
+    doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact_source"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("dry_contact_source"));
+    doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
+    doc[FPSTR(HA_NAME)] = F("Dry contact source");
+    doc[FPSTR(HA_ICON)] = F("mdi:source-branch");
+    doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.master.dryContact.source }}");
+    doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
+    doc.shrinkToFit();
+
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), F("dry_contact_source")).c_str(), doc);
+  }
+
   bool publishFaultCode(bool enabledByDefault = true) {
     JsonDocument doc;
     doc[FPSTR(HA_AVAILABILITY)][0][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();

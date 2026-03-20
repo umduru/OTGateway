@@ -93,6 +93,8 @@ protected:
   bool newConnection = false;
   bool prevBypassRelayState = false;
   bool hasPrevBypassRelayState = false;
+  bool prevDryContactState = false;
+  bool hasPrevDryContactState = false;
 
   #if defined(ARDUINO_ARCH_ESP32)
   const char* getTaskName() override {
@@ -234,6 +236,12 @@ protected:
       this->publishBypassRelayState(this->haHelper->getDeviceTopic(F("bypassRelay/state")).c_str());
       this->prevBypassRelayState = vars.bypassRelay.state;
       this->hasPrevBypassRelayState = true;
+    }
+
+    if (this->newConnection || !this->hasPrevDryContactState || this->prevDryContactState != vars.dryContact.state) {
+      this->publishDryContactState(this->haHelper->getDeviceTopic(F("dryContact/state")).c_str());
+      this->prevDryContactState = vars.dryContact.state;
+      this->hasPrevDryContactState = true;
     }
 
     // publish variables and status
@@ -391,6 +399,7 @@ protected:
     this->client->subscribe(this->haHelper->getDeviceTopic(F("settings/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("state/set")).c_str());
     this->client->subscribe(this->haHelper->getDeviceTopic(F("bypassRelay/set")).c_str());
+    this->client->subscribe(this->haHelper->getDeviceTopic(F("dryContact/set")).c_str());
 
     // subscribe to manual sensors
     for (uint8_t sensorId = 0; sensorId <= Sensors::getMaxSensorId(); sensorId++) {
@@ -456,6 +465,40 @@ protected:
       return;
     }
 
+    if (this->haHelper->getDeviceTopic(F("dryContact/set")).equals(topic)) {
+      bool changed = false;
+      String value;
+      value.reserve(length);
+
+      for (size_t i = 0; i < length; i++) {
+        value += static_cast<char>(payload[i]);
+      }
+
+      value.trim();
+      value.toUpperCase();
+
+      if (!isDryContactManualControlAllowed(settings)) {
+        Log.swarningln(FPSTR(L_MQTT_MSG), F("Manual dry contact control is unavailable in auto mode"));
+
+      } else if (value.equals(F("ON")) && !vars.dryContact.enabled) {
+        vars.dryContact.enabled = true;
+        changed = true;
+
+      } else if (value.equals(F("OFF")) && vars.dryContact.enabled) {
+        vars.dryContact.enabled = false;
+        changed = true;
+      }
+
+      // delete topic
+      this->writer->publish(topic.c_str(), nullptr, 0, true);
+
+      if (changed) {
+        this->resetPublishedVarsTime();
+      }
+
+      return;
+    }
+
     if (settings.system.logLevel >= TinyLogger::Level::TRACE) {
       Log.strace(FPSTR(L_MQTT_MSG), F("Topic: %s\r\n>  "), topic.c_str());
       if (Log.lock()) {
@@ -497,7 +540,16 @@ protected:
       }
 
     } else if (this->haHelper->getDeviceTopic(F("settings/set")).equals(topic)) {
-      if (safeJsonToSettings(doc, settings)) {
+      Settings nextSettings = settings;
+      bool changed = safeJsonToSettings(doc, nextSettings);
+
+      if (changed && isAutoRelayModeConflict(nextSettings)) {
+        Log.swarningln(FPSTR(L_MQTT_MSG), F("Settings conflict: externalPump.use and cascadeControl.output.enabled cannot be enabled together"));
+        changed = false;
+      }
+
+      if (changed) {
+        settings = nextSettings;
         this->resetPublishedSettingsTime();
         fsSettings.update();
       }
@@ -556,9 +608,12 @@ protected:
     this->haHelper->publishFlameState();
     this->haHelper->publishFaultState();
     this->haHelper->publishDiagState();
-    this->haHelper->publishExternalPumpState(false);
+    this->haHelper->publishExternalPumpState(true);
     this->haHelper->publishSwitchBypassRelay(true);
     this->haHelper->publishBypassRelayState(true);
+    this->haHelper->publishSwitchDryContact(true);
+    this->haHelper->publishDryContactState(true);
+    this->haHelper->publishDryContactSource(true);
 
     // sensors
     this->haHelper->publishFaultCode();
@@ -695,6 +750,14 @@ protected:
     return this->writer->publish(
       topic,
       vars.bypassRelay.state ? "ON" : "OFF",
+      true
+    );
+  }
+
+  bool publishDryContactState(const char* topic) {
+    return this->writer->publish(
+      topic,
+      vars.dryContact.state ? "ON" : "OFF",
       true
     );
   }

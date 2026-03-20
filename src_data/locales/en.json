@@ -83,6 +83,7 @@
         "heating": "Heating",
         "dhw": "DHW",
         "bypassRelay": "Bypass relay",
+        "dryContact": "Dry contact (K1)",
         "bypassRelay.state": "Current mode",
         "state": {
           "on": "Via OTGateway",
@@ -111,6 +112,13 @@
         "mEmergencyState": "Emergency mode",
         "mExtPumpState": "External pump",
         "mBypassRelayState": "Bypass relay",
+        "mDryContactState": "Dry contact (K1)",
+        "mDryContactSource": "Dry contact source",
+        "dryContactSource": {
+          "manual": "Manual",
+          "cascade": "Cascade",
+          "pump": "Pump"
+        },
         "mCascadeControlInput": "Cascade control (input)",
         "mCascadeControlOutput": "Cascade control (output)",
 
@@ -307,6 +315,12 @@
         "blankNotUse": "blank - not use",
         "bleDevice": "BLE device can be used <u>only</u> with some ESP32 boards with BLE support!"
       },
+      "modeConflict": {
+        "note": "Only one mode can be used at the same time: external pump or cascade output."
+      },
+      "validation": {
+        "modeConflict": "Only one mode can control relay at the same time: external pump or cascade output."
+      },
 
       "temp": {
         "min": "Minimum temperature",
@@ -491,6 +505,7 @@
 
       "extPump": {
         "use": "Use external pump",
+        "desc": "Can be used to switch on pump <u>via relay</u>.",
         "gpio": "Relay GPIO",
         "invertState": "Invert GPIO state",
         "postCirculationTime": "Post circulation time <small>(min)</small>",

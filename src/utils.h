@@ -574,6 +574,32 @@ inline void safeSettingsToJson(const Settings& src, JsonVariant dst) {
   settingsToJson(src, dst, true);
 }
 
+inline bool isAutoRelayModeConflict(const Settings& value) {
+  return value.externalPump.use && value.cascadeControl.output.enabled;
+}
+
+inline bool isDryContactGpioExternalPumpOwner(const Settings& value) {
+  #ifdef UMDU_DRY_CONTACT_GPIO
+  return value.externalPump.use && GPIO_IS_VALID(UMDU_DRY_CONTACT_GPIO) && value.externalPump.gpio == UMDU_DRY_CONTACT_GPIO;
+  #else
+  (void) value;
+  return false;
+  #endif
+}
+
+inline bool isDryContactGpioCascadeOwner(const Settings& value) {
+  #ifdef UMDU_DRY_CONTACT_GPIO
+  return value.cascadeControl.output.enabled && GPIO_IS_VALID(UMDU_DRY_CONTACT_GPIO) && value.cascadeControl.output.gpio == UMDU_DRY_CONTACT_GPIO;
+  #else
+  (void) value;
+  return false;
+  #endif
+}
+
+inline bool isDryContactManualControlAllowed(const Settings& value) {
+  return !isDryContactGpioExternalPumpOwner(value) && !isDryContactGpioCascadeOwner(value);
+}
+
 bool jsonToSettings(const JsonVariantConst src, Settings& dst, bool safe = false) {
   bool changed = false;
 
@@ -2208,6 +2234,21 @@ void varsToJson(const Variables& src, JsonVariant dst) {
   mBypassRelay[FPSTR(S_STATE)] = src.bypassRelay.state;
   master[FPSTR(S_EXTERNAL_PUMP)][FPSTR(S_STATE)] = src.externalPump.state;
 
+  auto mDryContact = master[FPSTR(S_DRY_CONTACT)].to<JsonObject>();
+  const bool dryContactManualControlAllowed = isDryContactManualControlAllowed(settings);
+  mDryContact[FPSTR(S_SUPPORTED)] = src.dryContact.supported;
+  mDryContact[FPSTR(S_ENABLED)] = src.dryContact.enabled;
+  mDryContact[FPSTR(S_STATE)] = src.dryContact.state;
+  mDryContact[FPSTR(S_MANUAL_CONTROL)] = dryContactManualControlAllowed;
+
+  if (isDryContactGpioExternalPumpOwner(settings)) {
+    mDryContact[FPSTR(S_SOURCE)] = F("pump");
+  } else if (isDryContactGpioCascadeOwner(settings)) {
+    mDryContact[FPSTR(S_SOURCE)] = F("cascade");
+  } else {
+    mDryContact[FPSTR(S_SOURCE)] = F("manual");
+  }
+
   auto mCascadeControl = master[FPSTR(S_CASCADE_CONTROL)].to<JsonObject>();
   mCascadeControl[FPSTR(S_INPUT)] = src.cascadeControl.input;
   mCascadeControl[FPSTR(S_OUTPUT)] = src.cascadeControl.output;
@@ -2235,6 +2276,14 @@ bool jsonToVars(const JsonVariantConst src, Variables& dst) {
     bool value = src[FPSTR(S_BYPASS_RELAY)][FPSTR(S_ENABLED)].as<bool>();
     if (value != dst.bypassRelay.enabled) {
       dst.bypassRelay.enabled = value;
+      changed = true;
+    }
+  }
+
+  if (src[FPSTR(S_DRY_CONTACT)][FPSTR(S_ENABLED)].is<bool>()) {
+    bool value = src[FPSTR(S_DRY_CONTACT)][FPSTR(S_ENABLED)].as<bool>();
+    if (isDryContactManualControlAllowed(settings) && value != dst.dryContact.enabled) {
+      dst.dryContact.enabled = value;
       changed = true;
     }
   }
