@@ -1,4 +1,4 @@
-#define PROJECT_NAME                    "OpenTherm Gateway by umdu"
+#define PROJECT_NAME                    "umdu_ot"
 #define PROJECT_REPO                    "https://github.com/umduru/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL         15000
