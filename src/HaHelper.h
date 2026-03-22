@@ -1221,7 +1221,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("bypass_relay"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("bypass_relay"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Байпасное реле");
+    doc[FPSTR(HA_NAME)] = F("Байпас-реле");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.bypassRelay.state, 'ON', 'OFF') }}");
@@ -1241,19 +1241,16 @@ public:
     doc[FPSTR(HA_AVAILABILITY)][FPSTR(HA_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("bypass_relay_state"));
-    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("bypass_relay_state"));
+    doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("bypass_relay_state"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
-    doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("Состояние байпасного реле");
+    doc[FPSTR(HA_NAME)] = F("Состояние байпас-реле");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
-    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.bypassRelay.state, 'ON', 'OFF') }}");
-    doc[FPSTR(HA_PAYLOAD_ON)] = F("ON");
-    doc[FPSTR(HA_PAYLOAD_OFF)] = F("OFF");
+    doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.bypassRelay.state, 'Через OTGateway', 'Внешний THERM') }}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
     doc.shrinkToFit();
 
-    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("bypass_relay_state")).c_str(), doc);
+    return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_SENSOR), F("bypass_relay_state")).c_str(), doc);
   }
 
   bool publishSwitchDryContact(bool enabledByDefault = true) {
@@ -1576,7 +1573,7 @@ public:
   bool deleteDhwState() {
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw")).c_str());
   }
-  
+
   bool deleteInputDhwTarget() {
     return this->publish(this->makeConfigTopic(FPSTR(HA_ENTITY_NUMBER), F("dhw_target")).c_str());
   }
