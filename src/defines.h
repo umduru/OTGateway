@@ -1,5 +1,5 @@
-#define PROJECT_NAME                    "OpenTherm Gateway"
-#define PROJECT_REPO                    "https://github.com/Laxilef/OTGateway"
+#define PROJECT_NAME                    "OpenTherm Gateway by umdu"
+#define PROJECT_REPO                    "https://github.com/umduru/OTGateway"
 
 #define MQTT_RECONNECT_INTERVAL         15000
 #define CONFIG_URL                      "http://%s/"
@@ -55,15 +55,15 @@
 #endif
 
 #ifndef DEFAULT_HOSTNAME
-  #define DEFAULT_HOSTNAME ""
+  #define DEFAULT_HOSTNAME "umdu_ot"
 #endif
 
 #ifndef DEFAULT_AP_SSID
-  #define DEFAULT_AP_SSID "OpenTherm Gateway"
+  #define DEFAULT_AP_SSID "umdu_ot"
 #endif
 
 #ifndef DEFAULT_AP_PASSWORD
-  #define DEFAULT_AP_PASSWORD "otgateway123456"
+  #define DEFAULT_AP_PASSWORD "12345678"
 #endif
 
 #ifndef DEFAULT_STA_SSID

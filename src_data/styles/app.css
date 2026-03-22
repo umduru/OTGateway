@@ -4,8 +4,8 @@
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 0.75);
   }
 
-  .logo {
-    font-size: 1.2rem;
+  .logo-image {
+    height: 1.5rem;
   }
 }
 
@@ -15,8 +15,8 @@
     --pico-block-spacing-horizontal: var(--pico-spacing);
   }
 
-  .logo {
-    font-size: 1.25rem;
+  .logo-image {
+    height: 1.6rem;
   }
 }
 
@@ -26,8 +26,8 @@
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.25);
   }
 
-  .logo {
-    font-size: 1.25rem;
+  .logo-image {
+    height: 1.7rem;
   }
 }
 
@@ -37,8 +37,8 @@
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.5);
   }
 
-  .logo {
-    font-size: 1.3rem;
+  .logo-image {
+    height: 1.75rem;
   }
 
   .container {
@@ -52,8 +52,8 @@
     --pico-block-spacing-horizontal: calc(var(--pico-spacing) * 1.75);
   }
 
-  .logo {
-    font-size: 1.3rem;
+  .logo-image {
+    height: 1.75rem;
   }
 
   .container {
@@ -81,6 +81,59 @@ footer {
 }*/
 nav li :where(a, [role=link]) {
   margin: 0;
+}
+
+.nav-brand,
+.nav-back-item {
+  display: flex;
+  align-items: center;
+}
+
+.logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem 0.6rem;
+  border-radius: calc(var(--pico-border-radius) * 1.5);
+  background: #f6f8fb;
+}
+
+.logo-image {
+  display: block;
+  width: auto;
+  height: 1.4rem;
+}
+
+.nav-back-item {
+  margin-right: 0.35rem;
+}
+
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--pico-muted-border-color);
+  color: var(--pico-color);
+  text-decoration: none;
+}
+
+.nav-back:hover {
+  background: var(--pico-primary-focus);
+  border-color: var(--pico-primary-hover-border);
+}
+
+.nav-back svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 details>div {
@@ -121,20 +174,6 @@ tr.network:hover {
   padding: 1rem;
   margin-bottom: 1rem;
 }
-
-.logo {
-  display: inline-block;
-  padding: calc(var(--pico-nav-link-spacing-vertical) - var(--pico-border-width) * 2) var(--pico-nav-link-spacing-horizontal);
-  vertical-align: baseline;
-  line-height: var(--pico-line-height);
-  background-color: var(--pico-code-kbd-background-color);
-  border-radius: var(--pico-border-radius);
-  color: var(--pico-code-kbd-color);
-  font-weight: bolder;
-  /*font-size: 1.3rem;*/
-  font-family: var(--pico-font-family-monospace);
-}
-
 
 .thermostat {
   display: grid;

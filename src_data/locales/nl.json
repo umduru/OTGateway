@@ -491,7 +491,7 @@
         "backupAndRestore": "Back-up & herstel",
         "backupAndRestore.desc": "In deze sectie kunt u een back-up van ALLE instellingen opslaan en herstellen.",
         "upgrade": "Upgrade",
-        "upgrade.desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
+        "upgrade.desc": "In deze sectie kunt u de firmware en het bestandssysteem van uw apparaat upgraden.<br />De nieuwste releases kunnen worden gedownload van de <a href=\"https://github.com/umduru/OTGateway/releases\" target=\"_blank\">Releases-pagina</a> van de projectrepository."
       },
       "note": {
         "disclaimer1": "Na een succesvolle upgrade van het bestandssysteem worden ALLE instellingen teruggezet naar de standaardwaarden! Sla een back-up op voordat u gaat upgraden.",

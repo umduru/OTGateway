@@ -530,7 +530,7 @@
         "backupAndRestore": "Backup & restore",
         "backupAndRestore.desc": "In questa sezione puoi salvare e recuperare un backup di tutte le impostazioni.",
         "upgrade": "Aggiorna",
-        "upgrade.desc": "In questa sezione puoi aggiornare il firmware il filesystem del tuo dispositivo.<br />L'ultimo aggiornamento può essere scaricato da <a href=\"https://github.com/Laxilef/OTGateway/releases\" target=\"_blank\">Releases page</a> del progetto." 
+        "upgrade.desc": "In questa sezione puoi aggiornare il firmware il filesystem del tuo dispositivo.<br />L'ultimo aggiornamento può essere scaricato da <a href=\"https://github.com/umduru/OTGateway/releases\" target=\"_blank\">Releases page</a> del progetto." 
       },
 
       "note": {

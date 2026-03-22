@@ -905,6 +905,7 @@ protected:
 
     this->webServer->serveStatic("/robots.txt", LittleFS, "/static/robots.txt", PORTAL_CACHE);
     this->webServer->serveStatic("/favicon.ico", LittleFS, "/static/images/favicon.ico", PORTAL_CACHE);
+    this->webServer->serveStatic("/umdu_ot.png", LittleFS, "/static/images/umdu_ot.png", PORTAL_CACHE);
     this->webServer->serveStatic("/static", LittleFS, "/static", PORTAL_CACHE);
   }
 
