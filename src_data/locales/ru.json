@@ -83,7 +83,7 @@
         "heating": "Отопление",
         "dhw": "ГВС",
         "bypassRelay": "Байпас-реле",
-        "dryContact": "Сухой контакт (K1)",
+        "dryContact": "Сухой контакт",
         "bypassRelay.state": "Текущий режим",
         "state": {
           "on": "Через OTGateway",
@@ -112,7 +112,7 @@
         "mEmergencyState": "Аварийный режим",
         "mExtPumpState": "Внешний насос",
         "mBypassRelayState": "Байпас-реле",
-        "mDryContactState": "Сухой контакт (K1)",
+        "mDryContactState": "Сухой контакт",
         "mDryContactSource": "Источник управления сухим контактом",
         "dryContactSource": {
           "manual": "Ручной",

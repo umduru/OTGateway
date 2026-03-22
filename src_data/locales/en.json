@@ -83,7 +83,7 @@
         "heating": "Heating",
         "dhw": "DHW",
         "bypassRelay": "Bypass relay",
-        "dryContact": "Dry contact (K1)",
+        "dryContact": "Dry contact",
         "bypassRelay.state": "Current mode",
         "state": {
           "on": "Via OTGateway",
@@ -112,7 +112,7 @@
         "mEmergencyState": "Emergency mode",
         "mExtPumpState": "External pump",
         "mBypassRelayState": "Bypass relay",
-        "mDryContactState": "Dry contact (K1)",
+        "mDryContactState": "Dry contact",
         "mDryContactSource": "Dry contact source",
         "dryContactSource": {
           "manual": "Manual",

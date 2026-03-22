@@ -1192,7 +1192,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("dry_contact"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Dry contact (K1)");
+    doc[FPSTR(HA_NAME)] = F("Dry contact");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.state, 'ON', 'OFF') }}");

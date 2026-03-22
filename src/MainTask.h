@@ -488,7 +488,7 @@ protected:
       vars.dryContact.state = state;
       vars.dryContact.source = static_cast<uint8_t>(source);
 
-      // Keep manual value in sync while auto mode owns K1 to avoid unexpected jump
+      // Keep manual value in sync while auto mode controls dry contact to avoid unexpected jump
       // when returning back from auto mode to manual mode.
       if (source != DryContactSource::MANUAL) {
         vars.dryContact.enabled = vars.dryContact.state;
