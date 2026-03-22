@@ -156,7 +156,7 @@ void setup() {
 
   // generate mqtt prefix if it is empty
   if (!strlen(settings.mqtt.prefix)) {
-    strcpy(settings.mqtt.prefix, getChipId("otgateway_").c_str());
+    strcpy(settings.mqtt.prefix, DEFAULT_MQTT_PREFIX);
     fsSettings.update();
   }
 

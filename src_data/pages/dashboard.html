@@ -936,7 +936,7 @@
                 sData.connected ? "green" : "red",
                 sensorNode
               );
-              setValue(".sName", sData.name, sensorNode);
+              setValue(".sName", sensorDisplayName(sData.name, sData.purpose), sensorNode);
               setValue(".sValue", "", sensorNode);
 
               const statusNode = sensorNode.querySelector(`.sStatusContainer`);

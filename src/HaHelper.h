@@ -24,6 +24,76 @@ public:
     return this->expireAfter;
   }
 
+  const __FlashStringHelper* getPurposeFriendlyName(Sensors::Purpose purpose) {
+    switch (purpose) {
+      case Sensors::Purpose::OUTDOOR_TEMP:
+        return F("Наружная температура");
+      case Sensors::Purpose::INDOOR_TEMP:
+        return F("Внутренняя температура");
+      case Sensors::Purpose::HEATING_TEMP:
+        return F("Отопление, температура");
+      case Sensors::Purpose::HEATING_RETURN_TEMP:
+        return F("Отопление, температура обратки");
+      case Sensors::Purpose::DHW_TEMP:
+        return F("ГВС, температура");
+      case Sensors::Purpose::DHW_RETURN_TEMP:
+        return F("ГВС, температура обратки");
+      case Sensors::Purpose::DHW_FLOW_RATE:
+        return F("ГВС, расход");
+      case Sensors::Purpose::EXHAUST_TEMP:
+        return F("Температура выхлопных газов");
+      case Sensors::Purpose::MODULATION_LEVEL:
+        return F("Уровень модуляции");
+      case Sensors::Purpose::NUMBER:
+        return F("Число");
+      case Sensors::Purpose::POWER_FACTOR:
+        return F("Мощность, %");
+      case Sensors::Purpose::POWER:
+        return F("Мощность");
+      case Sensors::Purpose::FAN_SPEED:
+        return F("Скорость вентилятора");
+      case Sensors::Purpose::CO2:
+        return F("CO2");
+      case Sensors::Purpose::PRESSURE:
+        return F("Давление");
+      case Sensors::Purpose::HUMIDITY:
+        return F("Влажность");
+      case Sensors::Purpose::TEMPERATURE:
+        return F("Температура");
+      default:
+        return nullptr;
+    }
+  }
+
+  bool shouldUsePurposeFriendlyName(const Sensors::Settings& sSensor) {
+    switch (sSensor.purpose) {
+      case Sensors::Purpose::OUTDOOR_TEMP:
+        return strcmp(sSensor.name, "Outdoor temp") == 0;
+      case Sensors::Purpose::INDOOR_TEMP:
+        return strcmp(sSensor.name, "Indoor temp") == 0;
+      case Sensors::Purpose::HEATING_TEMP:
+        return strcmp(sSensor.name, "Heating temp") == 0;
+      case Sensors::Purpose::HEATING_RETURN_TEMP:
+        return strcmp(sSensor.name, "Heating return temp") == 0;
+      case Sensors::Purpose::DHW_TEMP:
+        return strcmp(sSensor.name, "DHW temp") == 0;
+      case Sensors::Purpose::DHW_FLOW_RATE:
+        return strcmp(sSensor.name, "DHW flow rate") == 0;
+      case Sensors::Purpose::EXHAUST_TEMP:
+        return strcmp(sSensor.name, "Exhaust temp") == 0;
+      case Sensors::Purpose::PRESSURE:
+        return strcmp(sSensor.name, "Pressure") == 0;
+      case Sensors::Purpose::MODULATION_LEVEL:
+        return strcmp(sSensor.name, "Modulation level") == 0;
+      case Sensors::Purpose::POWER:
+        return strcmp(sSensor.name, "Power") == 0;
+      case Sensors::Purpose::TEMPERATURE:
+        return strcmp(sSensor.name, "Heating setpoint temp") == 0;
+      default:
+        return false;
+    }
+  }
+
   bool publishDynamicSensor(Sensors::Settings& sSensor, Sensors::ValueType vType = Sensors::ValueType::PRIMARY, UnitSystem unit = UnitSystem::METRIC, bool enabledByDefault = true) {
     JsonDocument doc;
 
@@ -187,7 +257,7 @@ public:
       switch (vType) {
         case Sensors::ValueType::TEMPERATURE:
           Sensors::makeObjectIdWithSuffix(objId, sSensor.name, F("temp"));
-          sName += F(" temperature");
+          sName += F(" температура");
 
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
           if (unit == UnitSystem::METRIC) {
@@ -202,7 +272,7 @@ public:
 
         case Sensors::ValueType::HUMIDITY:
           Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_HUMIDITY));
-          sName += F(" humidity");
+          sName += F(" влажность");
 
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_HUMIDITY);
           doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_PERCENT);
@@ -212,7 +282,7 @@ public:
 
         case Sensors::ValueType::BATTERY:
           Sensors::makeObjectIdWithSuffix(objId, sSensor.name, FPSTR(S_BATTERY));
-          sName += F(" battery");
+          sName += F(" батарея");
           
           doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_BATTERY);
           doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
@@ -256,7 +326,13 @@ public:
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_TOPIC)] = doc[FPSTR(HA_STATE_TOPIC)];
       doc[FPSTR(HA_AVAILABILITY)][1][FPSTR(HA_VALUE_TEMPLATE)] = JsonString(AVAILABILITY_SENSOR_CONN, true);
 
-      doc[FPSTR(HA_NAME)] = sSensor.name;
+      const __FlashStringHelper* purposeName = this->getPurposeFriendlyName(sSensor.purpose);
+      const bool usePurposeName = purposeName != nullptr && this->shouldUsePurposeFriendlyName(sSensor);
+      if (usePurposeName) {
+        doc[FPSTR(HA_NAME)] = purposeName;
+      } else {
+        doc[FPSTR(HA_NAME)] = sSensor.name;
+      }
       doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.value|float(0)|round(2) }}");
     }
 
@@ -341,7 +417,7 @@ public:
     {
       String sName = sSensor.name;
       sName.trim();
-      sName += F(" connected");
+      sName += F(" подключен");
 
       doc[FPSTR(HA_NAME)] = sName;
     }
@@ -388,7 +464,7 @@ public:
     {
       String sName = sSensor.name;
       sName.trim();
-      sName += F(" signal quality");
+      sName += F(" качество сигнала");
 
       doc[FPSTR(HA_NAME)] = sName;
     }
@@ -428,7 +504,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_turbo"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("heating_turbo"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Turbo heating");
+    doc[FPSTR(HA_NAME)] = F("Турбо отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:rocket-launch-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_STATE_ON)] = true;
@@ -450,7 +526,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating_hysteresis"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("heating_hysteresis"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Use heating hysteresis");
+    doc[FPSTR(HA_NAME)] = F("Использовать гистерезис отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_STATE_ON)] = true;
@@ -481,7 +557,7 @@ public:
       doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = FPSTR(HA_UNIT_OF_MEASUREMENT_F);
     }
 
-    doc[FPSTR(HA_NAME)] = F("Heating hysteresis");
+    doc[FPSTR(HA_NAME)] = F("Гистерезис отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:altimeter");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.hysteresis.value|float(0)|round(2) }}");
@@ -505,7 +581,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("heating_turbo_factor"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("power_factor");
-    doc[FPSTR(HA_NAME)] = F("Heating turbo factor");
+    doc[FPSTR(HA_NAME)] = F("Коэффициент турбо отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:multiplication-box");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.turboFactor|float(0)|round(2) }}");
@@ -541,7 +617,7 @@ public:
       doc[FPSTR(HA_MAX)] = 211;
     }
 
-    doc[FPSTR(HA_NAME)] = F("Heating min temp");
+    doc[FPSTR(HA_NAME)] = F("Мин. температура отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.minTemp|float(0)|round(1) }}");
@@ -575,7 +651,7 @@ public:
       doc[FPSTR(HA_MAX)] = 212;
     }
 
-    doc[FPSTR(HA_NAME)] = F("Heating max temp");
+    doc[FPSTR(HA_NAME)] = F("Макс. температура отопления");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.heating.maxTemp|float(0)|round(1) }}");
@@ -610,7 +686,7 @@ public:
       doc[FPSTR(HA_MAX)] = 211;
     }
 
-    doc[FPSTR(HA_NAME)] = F("DHW min temp");
+    doc[FPSTR(HA_NAME)] = F("Мин. температура ГВС");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.minTemp|float(0)|round(1) }}");
@@ -644,7 +720,7 @@ public:
       doc[FPSTR(HA_MAX)] = 212;
     }
 
-    doc[FPSTR(HA_NAME)] = F("DHW max temp");
+    doc[FPSTR(HA_NAME)] = F("Макс. температура ГВС");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.dhw.maxTemp|float(0)|round(1) }}");
@@ -688,7 +764,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_p"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_p"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("PID factor P");
+    doc[FPSTR(HA_NAME)] = F("PID коэффициент P");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-p-circle-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.p_factor|float(0)|round(3) }}");
@@ -711,7 +787,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_i"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_i"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("PID factor I");
+    doc[FPSTR(HA_NAME)] = F("PID коэффициент I");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-i-circle-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.i_factor|float(0)|round(4) }}");
@@ -734,7 +810,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("pid_d"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("pid_d"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("PID factor D");
+    doc[FPSTR(HA_NAME)] = F("PID коэффициент D");
     doc[FPSTR(HA_ICON)] = F("mdi:alpha-d-circle-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.d_factor|float(0)|round(3) }}");
@@ -759,7 +835,7 @@ public:
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("s");
-    doc[FPSTR(HA_NAME)] = F("PID DT");
+    doc[FPSTR(HA_NAME)] = F("PID dT");
     doc[FPSTR(HA_ICON)] = F("mdi:timer-cog-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.dt|int(0) }}");
@@ -795,7 +871,7 @@ public:
       doc[FPSTR(HA_MAX)] = 211;
     }
 
-    doc[FPSTR(HA_NAME)] = F("PID min temp");
+    doc[FPSTR(HA_NAME)] = F("PID мин. температура");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-down");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.minTemp|float(0)|round(1) }}");
@@ -829,7 +905,7 @@ public:
       doc[FPSTR(HA_MAX)] = 212;
     }
 
-    doc[FPSTR(HA_NAME)] = F("PID max temp");
+    doc[FPSTR(HA_NAME)] = F("PID макс. температура");
     doc[FPSTR(HA_ICON)] = F("mdi:thermometer-chevron-up");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.pid.maxTemp|float(0)|round(1) }}");
@@ -851,7 +927,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("equitherm"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm");
+    doc[FPSTR(HA_NAME)] = F("Эквитерм");
     doc[FPSTR(HA_ICON)] = F("mdi:sun-snowflake-variant");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_STATE_ON)] = true;
@@ -873,7 +949,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_slope"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_slope"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm slope");
+    doc[FPSTR(HA_NAME)] = F("Эквитерм наклон");
     doc[FPSTR(HA_ICON)] = F("mdi:slope-uphill");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.slope|float(0)|round(3) }}");
@@ -896,7 +972,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_exponent"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_exponent"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm exponent");
+    doc[FPSTR(HA_NAME)] = F("Эквитерм экспонента");
     doc[FPSTR(HA_ICON)] = F("mdi:exponent");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.exponent|float(0)|round(3) }}");
@@ -920,7 +996,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_shift"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_TEMPERATURE);
-    doc[FPSTR(HA_NAME)] = F("Equitherm shift");
+    doc[FPSTR(HA_NAME)] = F("Эквитерм смещение");
     doc[FPSTR(HA_ICON)] = F("mdi:chart-areaspline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.shift|float(0)|round(2) }}");
@@ -946,7 +1022,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("equitherm_target_diff_factor"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_NUMBER), F("equitherm_target_diff_factor"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Equitherm target diff factor");
+    doc[FPSTR(HA_NAME)] = F("Эквитерм коэф. разницы цели");
     doc[FPSTR(HA_ICON)] = F("mdi:chart-timeline-variant-shimmer");
     doc[FPSTR(HA_STATE_TOPIC)] = this->settingsTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.equitherm.targetDiffFactor|float(0)|round(3) }}");
@@ -970,7 +1046,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("status"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
-    doc[FPSTR(HA_NAME)] = F("Status");
+    doc[FPSTR(HA_NAME)] = F("Статус");
     doc[FPSTR(HA_ICON)] = F("mdi:list-status");
     doc[FPSTR(HA_STATE_TOPIC)] = this->statusTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value == 'online', 'OFF', 'ON') }}");
@@ -988,7 +1064,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("emergency"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
-    doc[FPSTR(HA_NAME)] = F("Emergency");
+    doc[FPSTR(HA_NAME)] = F("Авария");
     doc[FPSTR(HA_ICON)] = F("mdi:alert-rhombus-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.emergency.state, 'ON', 'OFF') }}");
@@ -1006,7 +1082,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ot_status"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("connectivity");
-    doc[FPSTR(HA_NAME)] = F("Opentherm status");
+    doc[FPSTR(HA_NAME)] = F("Статус OpenTherm");
     doc[FPSTR(HA_ICON)] = F("mdi:list-status");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.connected, 'ON', 'OFF') }}");
@@ -1026,7 +1102,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("heating"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("Heating");
+    doc[FPSTR(HA_NAME)] = F("Отопление");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.heating.active, 'ON', 'OFF') }}");
@@ -1046,7 +1122,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dhw"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("DHW");
+    doc[FPSTR(HA_NAME)] = F("ГВС");
     doc[FPSTR(HA_ICON)] = F("mdi:faucet");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.dhw.active, 'ON', 'OFF') }}");
@@ -1066,7 +1142,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("flame"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("flame"));
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("Flame");
+    doc[FPSTR(HA_NAME)] = F("Пламя");
     doc[FPSTR(HA_ICON)] = F("mdi:gas-burner");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.flame, 'ON', 'OFF') }}");
@@ -1087,7 +1163,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("fault"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
-    doc[FPSTR(HA_NAME)] = F("Fault");
+    doc[FPSTR(HA_NAME)] = F("Ошибка");
     doc[FPSTR(HA_ICON)] = F("mdi:alert-remove-outline");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.fault.active, 'ON', 'OFF') }}");
@@ -1108,7 +1184,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("problem");
-    doc[FPSTR(HA_NAME)] = F("Diagnostic");
+    doc[FPSTR(HA_NAME)] = F("Диагностика");
     doc[FPSTR(HA_ICON)] = F("mdi:account-wrench");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.slave.diag.active, 'ON', 'OFF') }}");
@@ -1126,7 +1202,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("ext_pump"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("External pump");
+    doc[FPSTR(HA_NAME)] = F("Внешний насос");
     doc[FPSTR(HA_ICON)] = F("mdi:pump");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.externalPump.state, 'ON', 'OFF') }}");
@@ -1145,7 +1221,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("bypass_relay"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("bypass_relay"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Bypass relay");
+    doc[FPSTR(HA_NAME)] = F("Байпасное реле");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.bypassRelay.state, 'ON', 'OFF') }}");
@@ -1168,7 +1244,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("bypass_relay_state"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("Bypass relay state");
+    doc[FPSTR(HA_NAME)] = F("Состояние байпасного реле");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.bypassRelay.state, 'ON', 'OFF') }}");
@@ -1192,7 +1268,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SWITCH), F("dry_contact"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
-    doc[FPSTR(HA_NAME)] = F("Dry contact");
+    doc[FPSTR(HA_NAME)] = F("Сухой контакт");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.state, 'ON', 'OFF') }}");
@@ -1215,7 +1291,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BINARY_SENSOR), F("dry_contact_state"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
     doc[FPSTR(HA_DEVICE_CLASS)] = F("running");
-    doc[FPSTR(HA_NAME)] = F("Dry contact state");
+    doc[FPSTR(HA_NAME)] = F("Состояние сухого контакта");
     doc[FPSTR(HA_ICON)] = F("mdi:electric-switch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ iif(value_json.master.dryContact.state, 'ON', 'OFF') }}");
@@ -1234,7 +1310,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dry_contact_source"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("dry_contact_source"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
-    doc[FPSTR(HA_NAME)] = F("Dry contact source");
+    doc[FPSTR(HA_NAME)] = F("Источник сухого контакта");
     doc[FPSTR(HA_ICON)] = F("mdi:source-branch");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.master.dryContact.source }}");
@@ -1254,7 +1330,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("fault_code"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("fault_code"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
-    doc[FPSTR(HA_NAME)] = F("Fault code");
+    doc[FPSTR(HA_NAME)] = F("Код ошибки");
     doc[FPSTR(HA_ICON)] = F("mdi:cog-box");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"%02d (0x%02X)\"|format(value_json.slave.fault.code, value_json.slave.fault.code) }}");
@@ -1274,7 +1350,7 @@ public:
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("diagnostic_code"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_SENSOR), F("diagnostic_code"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_DIAGNOSTIC);
-    doc[FPSTR(HA_NAME)] = F("Diagnostic code");
+    doc[FPSTR(HA_NAME)] = F("Диагностический код");
     doc[FPSTR(HA_ICON)] = F("mdi:information-box");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ \"%02d (0x%02X)\"|format(value_json.slave.diag.code, value_json.slave.diag.code) }}");
@@ -1314,7 +1390,7 @@ public:
     doc[FPSTR(HA_DEVICE_CLASS)] = F("duration");
     doc[FPSTR(HA_STATE_CLASS)] = F("total_increasing");
     doc[FPSTR(HA_UNIT_OF_MEASUREMENT)] = F("s");
-    doc[FPSTR(HA_NAME)] = F("Uptime");
+    doc[FPSTR(HA_NAME)] = F("Время работы");
     doc[FPSTR(HA_ICON)] = F("mdi:clock-start");
     doc[FPSTR(HA_STATE_TOPIC)] = this->stateTopic.c_str();
     doc[FPSTR(HA_VALUE_TEMPLATE)] = F("{{ value_json.master.uptime|int(0) }}");
@@ -1331,7 +1407,7 @@ public:
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("heating"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_CLIMATE), F("heating"));
-    doc[FPSTR(HA_NAME)] = F("Heating");
+    doc[FPSTR(HA_NAME)] = F("Отопление");
     doc[FPSTR(HA_ICON)] = F("mdi:radiator");
 
     doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = this->stateTopic.c_str();
@@ -1383,7 +1459,7 @@ public:
     doc[FPSTR(HA_ENABLED_BY_DEFAULT)] = enabledByDefault;
     doc[FPSTR(HA_UNIQUE_ID)] = this->getUniqueIdWithPrefix(F("dhw"));
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_CLIMATE), F("dhw"));
-    doc[FPSTR(HA_NAME)] = F("DHW");
+    doc[FPSTR(HA_NAME)] = F("ГВС");
     doc[FPSTR(HA_ICON)] = F("mdi:faucet");
 
     doc[FPSTR(HA_CURRENT_TEMPERATURE_TOPIC)] = this->stateTopic.c_str();
@@ -1430,7 +1506,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), FPSTR(S_RESTART));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
-    doc[FPSTR(HA_NAME)] = F("Restart");
+    doc[FPSTR(HA_NAME)] = F("Перезапуск");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"restart\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
@@ -1450,7 +1526,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), F("reset_fault"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
-    doc[FPSTR(HA_NAME)] = F("Reset fault");
+    doc[FPSTR(HA_NAME)] = F("Сброс ошибки");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetFault\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;
@@ -1470,7 +1546,7 @@ public:
     doc[FPSTR(HA_DEFAULT_ENTITY_ID)] = this->getEntityIdWithPrefix(FPSTR(HA_ENTITY_BUTTON), F("reset_diagnostic"));
     doc[FPSTR(HA_ENTITY_CATEGORY)] = FPSTR(HA_ENTITY_CATEGORY_CONFIG);
     doc[FPSTR(HA_DEVICE_CLASS)] = FPSTR(S_RESTART);
-    doc[FPSTR(HA_NAME)] = F("Reset diagnostic");
+    doc[FPSTR(HA_NAME)] = F("Сброс диагностики");
     doc[FPSTR(HA_COMMAND_TOPIC)] = this->setStateTopic.c_str();
     doc[FPSTR(HA_COMMAND_TEMPLATE)] = F("{\"actions\": {\"resetDiagnostic\": true}}");
     doc[FPSTR(HA_EXPIRE_AFTER)] = this->expireAfter;

@@ -827,6 +827,43 @@ const purposeUnit = (purpose, unitSystem) => {
   }, null);
 }
 
+const purposeNameI18nKey = (purpose) => {
+  return unit2str(parseInt(purpose), {
+    0: "sensors.purposes.outdoorTemp",
+    1: "sensors.purposes.indoorTemp",
+    2: "sensors.purposes.heatTemp",
+    3: "sensors.purposes.heatRetTemp",
+    4: "sensors.purposes.dhwTemp",
+    5: "sensors.purposes.dhwRetTemp",
+    6: "sensors.purposes.dhwFlowRate",
+    7: "sensors.purposes.exhaustTemp",
+    8: "sensors.purposes.modLevel",
+    247: "sensors.purposes.number",
+    248: "sensors.purposes.powerFactor",
+    249: "sensors.purposes.power",
+    250: "sensors.purposes.fanSpeed",
+    251: "sensors.purposes.co2",
+    252: "sensors.purposes.pressure",
+    253: "sensors.purposes.humidity",
+    254: "sensors.purposes.temperature",
+    255: "sensors.purposes.notConfigured"
+  }, null);
+}
+
+const purposeName = (purpose) => {
+  const key = purposeNameI18nKey(purpose);
+  if (key === null) {
+    return null;
+  }
+
+  const value = i18n(key);
+  return value == key ? null : value;
+}
+
+const sensorDisplayName = (name, purpose) => {
+  return purposeName(purpose) || name;
+}
+
 const memberIdToVendor = (memberId) => {
   // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h
   // https://github.com/Evgen2/SmartTherm/blob/v0.7/src/Web.cpp

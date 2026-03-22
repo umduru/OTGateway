@@ -207,7 +207,7 @@
         const templateNode = container.querySelector("#template");
 
         try {
-          const response = await fetch("/api/sensors", {
+          const response = await fetch("/api/sensors?detailed=1", {
             cache: "no-cache",
             credentials: "include"
           });
@@ -218,13 +218,14 @@
 
           const result = await response.json();
           for (const sensorId in result) {
+            const sData = result[sensorId];
             const sensorNode = templateNode.cloneNode(true);
             sensorNode.removeAttribute("id");
             sensorNode.classList.remove("hidden");
             sensorNode.dataset.id = sensorId;
             setValue(".id", sensorId, sensorNode);
             setValue(".pos", parseInt(sensorId) + 1, sensorNode);
-            setValue(".name", result[sensorId], sensorNode);
+            setValue(".name", sensorDisplayName(sData.name, sData.purpose), sensorNode);
             
             container.appendChild(sensorNode);
             container.appendChild(document.createElement("hr"));
@@ -246,6 +247,7 @@
                 sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));
               }, 10);
 
+              setValue(".name", sensorDisplayName(data.name, data.purpose), sensorNode);
               setBusy(".form-busy", "form", false, sensorNode);
             };
 

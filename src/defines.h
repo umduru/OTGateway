@@ -111,7 +111,7 @@
 #endif
 
 #ifndef DEFAULT_MQTT_PREFIX
-  #define DEFAULT_MQTT_PREFIX ""
+  #define DEFAULT_MQTT_PREFIX "umdu_ot"
 #endif
 
 #ifndef DEFAULT_OT_IN_GPIO
