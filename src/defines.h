@@ -55,7 +55,7 @@
 #endif
 
 #ifndef DEFAULT_HOSTNAME
-  #define DEFAULT_HOSTNAME "umdu_ot"
+  #define DEFAULT_HOSTNAME "umduot"
 #endif
 
 #ifndef DEFAULT_AP_SSID
