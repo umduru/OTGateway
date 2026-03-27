@@ -124,7 +124,7 @@
                       <option value="26" data-i18n>sensors.types.otDhwPumpHours</option>
                       <option value="27" data-i18n>sensors.types.otCoolingHours</option>
 
-                      <option value="50" data-i18n>sensors.types.ntcTemp</option>
+                      <option value="50" data-i18n data-legacy-only="true" hidden disabled>sensors.types.ntcTemp</option>
                       <option value="51" data-i18n>sensors.types.dallasTemp</option>
                       <option value="52" data-i18n>sensors.types.bluetooth</option>
                       <option value="253" data-i18n>sensors.types.heatSetpointTemp</option>
@@ -136,7 +136,7 @@
               </fieldset>
 
               <div class="grid">
-                <label>
+                <label class="hidden">
                   <span data-i18n>sensors.gpio</span>
                   <input type="number" outputmode="numeric" name="gpio" min="0" max="254" step="1">
                 </label>
@@ -215,6 +215,21 @@
         const container = document.querySelector("article");
         const templateNode = container.querySelector("#template");
 
+        const syncLegacyTypeOption = (selectNode) => {
+          if (!selectNode) {
+            return;
+          }
+
+          const legacyNtcOption = selectNode.querySelector("option[data-legacy-only='true']");
+          if (!legacyNtcOption) {
+            return;
+          }
+
+          const isLegacySelected = selectNode.value === legacyNtcOption.value;
+          legacyNtcOption.hidden = !isLegacySelected;
+          legacyNtcOption.disabled = !isLegacySelected;
+        };
+
         try {
           const response = await fetch("/api/sensors?detailed=1", {
             cache: "no-cache",
@@ -240,6 +255,7 @@
             container.appendChild(document.createElement("hr"));
 
             const sensorForm = sensorNode.querySelector("form");
+            const sensorType = sensorForm.querySelector("[name='type']");
             const fillData = (data) => {
               setCheckboxValue("[name='enabled']", data.enabled, sensorForm);
               setInputValue("[name='name']", data.name, {}, sensorForm);
@@ -251,9 +267,10 @@
               setInputValue("[name='factor']", data.factor, {}, sensorForm);
               setCheckboxValue("[name='filtering']", data.filtering, sensorForm);
               setInputValue("[name='filteringFactor']", data.filteringFactor, {}, sensorForm);
+              syncLegacyTypeOption(sensorType);
 
               setTimeout(() => {
-                sensorForm.querySelector("[name='type']").dispatchEvent(new Event("change"));
+                sensorType.dispatchEvent(new Event("change"));
               }, 10);
 
               setValue(".name", sensorDisplayName(data.name, data.purpose), sensorNode);
@@ -261,7 +278,8 @@
             };
 
             sensorForm.action = sensorForm.action.replace("{id}", sensorId);
-            sensorForm.querySelector("[name='type']").addEventListener("change", async (event) => {
+            sensorType.addEventListener("change", async (event) => {
+              syncLegacyTypeOption(event.target);
               const gpio = sensorForm.querySelector("[name='gpio']");
               const address = sensorForm.querySelector("[name='address']");
               const parentGpio = gpio.parentElement;
@@ -282,16 +300,9 @@
               }
 
               switch(parseInt(event.target.value)) {
-                // ntc
-                case 50:
-                  parentGpio.classList.remove("hidden");
-                  parentAddress.classList.add("hidden");
-                  address.removeAttribute("pattern");
-                  break;
-
                 // dallas
                 case 51:
-                  parentGpio.classList.remove("hidden");
+                  parentGpio.classList.add("hidden");
                   parentAddress.classList.remove("hidden");
                   address.setAttribute("pattern", "([A-Fa-f0-9]{2}:){7}[A-Fa-f0-9]{2}");
                   break;
