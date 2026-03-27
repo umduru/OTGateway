@@ -243,6 +243,10 @@
         "title": "Sensoradres",
         "note": "Laat leeg voor automatische detectie van DALLAS-sensoren. Voor BLE-apparaten is een MAC-adres vereist."
       },
+      "dallasHints": {
+        "outdoor": "Sensor #1 Buitentemperatuur gebruikt contacten 4-6 om de sensor aan te sluiten.",
+        "indoor": "Sensor #2 Binnentemperatuur gebruikt contacten 1-3 om de sensor aan te sluiten."
+      },
       "correction": {
         "desc": "Correctie van waarden",
         "offset": "Compensatie (offset)",

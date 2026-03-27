@@ -272,6 +272,10 @@
         "title": "Sensor address",
         "note": "For auto detection of DALLAS sensors leave it at default, for BLE devices need a MAC address"
       },
+      "dallasHints": {
+        "outdoor": "Sensor #1 Outdoor temperature uses contacts 4-6 to connect the sensor.",
+        "indoor": "Sensor #2 Indoor temperature uses contacts 1-3 to connect the sensor."
+      },
       "correction": {
         "desc": "Correction of values",
         "offset": "Compensation (offset)",

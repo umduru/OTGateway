@@ -264,6 +264,10 @@
         "title": "Indirizzo sensore",
         "note": "Per l'autoriconoscimento del sensore DALLAS lasciare quello di default, per sensore BLE richiede indirizzo MAC"
       },
+      "dallasHints": {
+        "outdoor": "Il sensore #1 Temperatura esterna utilizza i contatti 4-6 per collegare il sensore.",
+        "indoor": "Il sensore #2 Temperatura interna utilizza i contatti 1-3 per collegare il sensore."
+      },
       "correction": {
         "desc": "Correzione del valore",
         "offset": "Compensazione (offset)",
