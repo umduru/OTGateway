@@ -45,7 +45,7 @@
   --pico-form-element-active-background-color: #D9D9D9;
   --pico-form-element-active-border-color: var(--pico-primary-border);
   --pico-form-element-focus-color: var(--pico-primary-focus);
-  --pico-switch-background-color: #CFCFCF;
+  --pico-switch-background-color: var(--pico-background-color);
   --pico-switch-checked-background-color: var(--pico-primary-background);
   --pico-range-border-color: #CFCFCF;
   --pico-range-active-border-color: #C4C4C4;
@@ -165,7 +165,7 @@ details.dropdown > summary + ul {
     --pico-form-element-active-background-color: #262626;
     --pico-form-element-active-border-color: var(--pico-primary-border);
     --pico-form-element-focus-color: var(--pico-primary-focus);
-    --pico-switch-background-color: #303030;
+    --pico-switch-background-color: var(--pico-background-color);
     --pico-switch-checked-background-color: var(--pico-primary-background);
     --pico-range-border-color: #303030;
     --pico-range-active-border-color: #3B3B3B;
@@ -233,7 +233,7 @@ details.dropdown > summary + ul {
   --pico-form-element-active-background-color: #262626;
   --pico-form-element-active-border-color: var(--pico-primary-border);
   --pico-form-element-focus-color: var(--pico-primary-focus);
-  --pico-switch-background-color: #303030;
+  --pico-switch-background-color: var(--pico-background-color);
   --pico-switch-checked-background-color: var(--pico-primary-background);
   --pico-range-border-color: #303030;
   --pico-range-active-border-color: #3B3B3B;
@@ -606,7 +606,8 @@ tr.network:hover {
     "thermostat-minus thermostat-temp thermostat-plus"
     "thermostat-control thermostat-control thermostat-control";
 
-  border: .25rem solid var(--pico-blockquote-border-color);
+  background: var(--pico-card-sectioning-background-color);
+  border: 1px solid var(--pico-form-element-selected-background-color);
   border-radius: 0.75rem;
   padding: 0.5rem;
 }
@@ -713,6 +714,38 @@ tr.network:hover {
   margin: 1.25rem 0;
 }
 
+:root .tAction.outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  padding: 0;
+  border-radius: 0.9rem;
+  border-width: 1px;
+  box-shadow: 0 0.15rem 0.45rem rgba(0, 0, 0, 0.10);
+  line-height: 1;
+  transition:
+    box-shadow 0.12s ease,
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease;
+}
+
+:root .tAction.outline:active {
+  box-shadow: inset 0 0.1rem 0.25rem rgba(0, 0, 0, 0.14);
+}
+
+:root .tAction.outline:focus-visible {
+  box-shadow:
+    0 0 0 0.15rem var(--pico-primary-focus),
+    0 0.15rem 0.45rem rgba(0, 0, 0, 0.10);
+}
+
+:root .tAction.outline i {
+  font-size: 1.05rem;
+}
+
 :root:not([data-theme]) .tAction.outline,
 :root[data-theme="light"] .tAction.outline {
   background-color: var(--pico-primary-background);
@@ -722,8 +755,8 @@ tr.network:hover {
 
 :root:not([data-theme]) .tAction.outline:is(:hover, :focus, :active),
 :root[data-theme="light"] .tAction.outline:is(:hover, :focus, :active) {
-  background-color: var(--pico-primary-hover-background);
-  border-color: var(--pico-primary-hover-border);
+  background-color: var(--pico-primary-background);
+  border-color: var(--pico-primary-border);
   color: var(--pico-primary-inverse);
 }
 
