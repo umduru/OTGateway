@@ -6,7 +6,12 @@
       "source": "Source code",
       "help": "Help",
       "issues": "Issues & questions",
-      "releases": "Releases"
+      "releases": "Releases",
+      "menu": "Menu",
+      "theme": {
+        "light": "Switch to light theme",
+        "dark": "Switch to dark theme"
+      }
     },
     "dbm": "dBm",
     "kw": "kW",

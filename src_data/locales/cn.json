@@ -6,7 +6,12 @@
       "source": "源代码",
       "help": "帮助",
       "issues": "问题与反馈",
-      "releases": "发行版"
+      "releases": "发行版",
+      "menu": "菜单",
+      "theme": {
+        "light": "切换到浅色主题",
+        "dark": "切换到深色主题"
+      }
     },
     "dbm": "dBm",
     "kw": "kW",

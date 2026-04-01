@@ -864,6 +864,120 @@ const sensorDisplayName = (name, purpose) => {
   return purposeName(purpose) || name;
 }
 
+const THEME_STORAGE_KEY = 'theme';
+
+const isValidTheme = (theme) => {
+  return theme === 'light' || theme === 'dark';
+}
+
+const getStoredTheme = () => {
+  try {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    return isValidTheme(storedTheme) ? storedTheme : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+const getPreferredTheme = () => {
+  const theme = document.documentElement
+    ? document.documentElement.getAttribute('data-theme')
+    : null;
+
+  if (isValidTheme(theme)) {
+    return theme;
+  }
+
+  return window.matchMedia instanceof Function
+    && window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light';
+}
+
+const applyTheme = (theme) => {
+  if (!isValidTheme(theme) || !document.documentElement) {
+    return getPreferredTheme();
+  }
+
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme;
+
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (error) {}
+
+  return theme;
+}
+
+const themeToggleLabel = (nextTheme) => {
+  const i18nKey = nextTheme === 'dark'
+    ? 'nav.theme.dark'
+    : 'nav.theme.light';
+
+  if (typeof i18n === 'function') {
+    const translated = i18n(i18nKey);
+    if (translated && translated !== i18nKey) {
+      return translated;
+    }
+  }
+
+  return nextTheme === 'dark'
+    ? 'Switch to dark theme'
+    : 'Switch to light theme';
+}
+
+const syncThemeToggle = (toggle) => {
+  if (!(toggle instanceof Element)) {
+    return;
+  }
+
+  const currentTheme = getPreferredTheme();
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  const label = themeToggleLabel(nextTheme);
+
+  toggle.dataset.themeCurrent = currentTheme;
+  toggle.setAttribute('aria-label', label);
+  toggle.setAttribute('title', label);
+  toggle.setAttribute('aria-pressed', currentTheme === 'dark' ? 'true' : 'false');
+}
+
+const setupThemeToggle = (toggle) => {
+  if (!(toggle instanceof Element) || toggle.dataset.themeReady === 'true') {
+    return;
+  }
+
+  syncThemeToggle(toggle);
+
+  toggle.addEventListener('click', () => {
+    const nextTheme = getPreferredTheme() === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme);
+    syncThemeToggle(toggle);
+  });
+
+  document.addEventListener('i18n:updated', () => {
+    syncThemeToggle(toggle);
+  });
+
+  toggle.dataset.themeReady = 'true';
+}
+
+const initThemeToggles = () => {
+  const storedTheme = getStoredTheme();
+  if (storedTheme !== null) {
+    applyTheme(storedTheme);
+  }
+
+  document
+    .querySelectorAll('[data-theme-toggle]')
+    .forEach((toggle) => setupThemeToggle(toggle));
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initThemeToggles);
+} else {
+  initThemeToggles();
+}
+
 const memberIdToVendor = (memberId) => {
   // https://github.com/Jeroen88/EasyOpenTherm/blob/main/src/EasyOpenTherm.h
   // https://github.com/Evgen2/SmartTherm/blob/v0.7/src/Web.cpp

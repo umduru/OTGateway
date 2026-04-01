@@ -6,7 +6,12 @@
       "source": "Codice",
       "help": "Aiuto",
       "issues": "Problemi e domande",
-      "releases": "Versione"
+      "releases": "Versione",
+      "menu": "Menu",
+      "theme": {
+        "light": "Passa al tema chiaro",
+        "dark": "Passa al tema scuro"
+      }
     },
     "dbm": "dBm",
     "kw": "kW",

@@ -1,9 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title data-i18n>index.title</title>
+    <style>
+      html[data-i18n-ready="false"] body {
+        visibility: hidden;
+      }
+    </style>
+    <script>
+      (() => {
+        document.documentElement.setAttribute('lang', 'ru');
+        document.documentElement.setAttribute('data-i18n-ready', 'false');
+        try {
+          const storedTheme = localStorage.getItem('theme');
+          if (storedTheme === 'light' || storedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', storedTheme);
+            document.documentElement.style.colorScheme = storedTheme;
+          }
+        } catch (error) {}
+      })();
+    </script>
     <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
   </head>
 
@@ -19,16 +38,46 @@
             </a>
           </li>
         </ul>
-        <ul>
-          <li>
-            <select id="lang" aria-label="Lang">
-              <option value="en" selected>EN</option>
-              <option value="cn">CN</option>
-              <option value="it">IT</option>
-              <option value="nl">NL</option>
-              <option value="ru">RU</option>
-            </select>
+        <ul class="nav-controls">
+          <li class="nav-menu-mobile-item">
+            <details class="dropdown nav-menu-mobile">
+              <summary role="button" class="outline secondary" data-i18n>nav.menu</summary>
+              <ul dir="rtl">
+                <li><a href="/dashboard.html" data-i18n>dashboard.name</a></li>
+                <li><a href="/settings.html" data-i18n>settings.name</a></li>
+                <li><a href="/sensors.html" data-i18n>sensors.name</a></li>
+                <li><a href="/upgrade.html" data-i18n>upgrade.name</a></li>
+                <li><a href="/network.html" data-i18n>network.name</a></li>
+              </ul>
+            </details>
           </li>
+          <li>
+            <button
+              id="theme-toggle"
+              class="nav-theme-toggle"
+              type="button"
+              data-theme-toggle
+              data-theme-current="light"
+              aria-label="Switch theme"
+              title="Switch theme">
+              <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2.5M12 19.5V22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2 12h2.5M19.5 12H22M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"></path>
+              </svg>
+              <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path>
+              </svg>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <nav class="page-actions-nav" aria-label="Quick actions">
+        <ul class="page-actions">
+          <li><a href="/dashboard.html" role="button" class="nav-action" data-i18n>dashboard.name</a></li>
+          <li><a href="/settings.html" role="button" class="nav-action" data-i18n>settings.name</a></li>
+          <li><a href="/sensors.html" role="button" class="nav-action" data-i18n>sensors.name</a></li>
+          <li><a href="/upgrade.html" role="button" class="nav-action" data-i18n>upgrade.name</a></li>
+          <li><a href="/network.html" role="button" class="nav-action" data-i18n>network.name</a></li>
         </ul>
       </nav>
     </header>
@@ -145,11 +194,7 @@
             </tbody>
           </table>
 
-          <div class="grid" style="grid-template-columns: repeat(auto-fit,minmax(12rem,1fr)) !important;">
-            <a href="/dashboard.html" role="button" data-i18n>dashboard.name</a>
-            <a href="/settings.html" role="button" data-i18n>settings.name</a>
-            <a href="/sensors.html" role="button" data-i18n>sensors.name</a>
-            <a href="/upgrade.html" role="button" data-i18n>upgrade.name</a>
+          <div class="grid" style="grid-template-columns: minmax(12rem,16rem) !important;">
             <a href="/restart.html" role="button" class="secondary restart" data-i18n>button.restart</a>
           </div>
         </div>
@@ -170,7 +215,7 @@
     <script src="/static/app.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
-        const lang = new Lang(document.getElementById('lang'));
+        const lang = new Lang(document.getElementById('lang'), 'ru');
         await lang.build();
 
         setTimeout(async function onLoadPage() {

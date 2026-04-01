@@ -1,3 +1,207 @@
+:root:not([data-theme]),
+[data-theme="light"] {
+  color-scheme: light;
+  --pico-background-color: #E4E4E4;
+  --pico-color: #0F1217;
+  --pico-text-selection-color: rgba(15, 18, 23, 0.18);
+  --pico-muted-color: #3A3D42;
+  --pico-muted-border-color: #CFCFCF;
+  --pico-primary: #0F1217;
+  --pico-primary-background: #050506;
+  --pico-primary-border: var(--pico-primary-background);
+  --pico-primary-underline: rgba(15, 18, 23, 0.5);
+  --pico-primary-hover: #3A3D42;
+  --pico-primary-hover-background: #3A3D42;
+  --pico-primary-hover-border: var(--pico-primary-hover-background);
+  --pico-primary-hover-underline: var(--pico-primary-hover);
+  --pico-primary-focus: rgba(15, 18, 23, 0.2);
+  --pico-primary-inverse: #E4E4E4;
+  --pico-secondary: #3A3D42;
+  --pico-secondary-background: #0F1217;
+  --pico-secondary-border: var(--pico-secondary-background);
+  --pico-secondary-underline: rgba(58, 61, 66, 0.5);
+  --pico-secondary-hover: #0F1217;
+  --pico-secondary-hover-background: #3A3D42;
+  --pico-secondary-hover-border: var(--pico-secondary-hover-background);
+  --pico-secondary-hover-underline: var(--pico-secondary-hover);
+  --pico-secondary-focus: rgba(15, 18, 23, 0.2);
+  --pico-secondary-inverse: #E4E4E4;
+  --pico-h1-color: #050506;
+  --pico-h2-color: #050506;
+  --pico-h3-color: #050506;
+  --pico-h4-color: #050506;
+  --pico-h5-color: #050506;
+  --pico-h6-color: #0F1217;
+  --pico-blockquote-border-color: var(--pico-muted-border-color);
+  --pico-blockquote-footer-color: var(--pico-muted-color);
+  --pico-table-border-color: #CFCFCF;
+  --pico-code-background-color: #CFCFCF;
+  --pico-code-color: #0F1217;
+  --pico-form-element-background-color: #CFCFCF;
+  --pico-form-element-selected-background-color: #C4C4C4;
+  --pico-form-element-border-color: #CFCFCF;
+  --pico-form-element-color: #0F1217;
+  --pico-form-element-placeholder-color: #3A3D42;
+  --pico-form-element-active-background-color: #D9D9D9;
+  --pico-form-element-active-border-color: var(--pico-primary-border);
+  --pico-form-element-focus-color: var(--pico-primary-focus);
+  --pico-switch-background-color: #CFCFCF;
+  --pico-switch-checked-background-color: var(--pico-primary-background);
+  --pico-range-border-color: #CFCFCF;
+  --pico-range-active-border-color: #C4C4C4;
+  --pico-range-thumb-border-color: var(--pico-background-color);
+  --pico-range-thumb-color: var(--pico-secondary-background);
+  --pico-range-thumb-active-color: var(--pico-primary-background);
+  --pico-accordion-border-color: var(--pico-muted-border-color);
+  --pico-accordion-active-summary-color: var(--pico-primary-hover);
+  --pico-accordion-close-summary-color: var(--pico-color);
+  --pico-accordion-open-summary-color: var(--pico-muted-color);
+  --pico-card-background-color: #D9D9D9;
+  --pico-card-border-color: var(--pico-card-background-color);
+  --pico-card-sectioning-background-color: #CFCFCF;
+  --pico-dropdown-background-color: #D9D9D9;
+  --pico-dropdown-border-color: #CFCFCF;
+  --pico-dropdown-color: var(--pico-color);
+  --pico-dropdown-hover-background-color: #C4C4C4;
+  --pico-progress-background-color: #CFCFCF;
+}
+
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --pico-background-color: #1B1B1B;
+    --pico-color: #F0EDE8;
+    --pico-text-selection-color: rgba(240, 237, 232, 0.18);
+    --pico-muted-color: #C5C2BD;
+    --pico-muted-border-color: #303030;
+    --pico-primary: #F0EDE8;
+    --pico-primary-background: #FAFAF9;
+    --pico-primary-border: var(--pico-primary-background);
+    --pico-primary-underline: rgba(240, 237, 232, 0.5);
+    --pico-primary-hover: #C5C2BD;
+    --pico-primary-hover-background: #C5C2BD;
+    --pico-primary-hover-border: var(--pico-primary-hover-background);
+    --pico-primary-hover-underline: var(--pico-primary-hover);
+    --pico-primary-focus: rgba(240, 237, 232, 0.2);
+    --pico-primary-inverse: #1B1B1B;
+    --pico-secondary: #C5C2BD;
+    --pico-secondary-background: #F0EDE8;
+    --pico-secondary-border: var(--pico-secondary-background);
+    --pico-secondary-underline: rgba(197, 194, 189, 0.5);
+    --pico-secondary-hover: #FAFAF9;
+    --pico-secondary-hover-background: #C5C2BD;
+    --pico-secondary-hover-border: var(--pico-secondary-hover-background);
+    --pico-secondary-hover-underline: var(--pico-secondary-hover);
+    --pico-secondary-focus: rgba(240, 237, 232, 0.2);
+    --pico-secondary-inverse: #1B1B1B;
+    --pico-h1-color: #FAFAF9;
+    --pico-h2-color: #FAFAF9;
+    --pico-h3-color: #FAFAF9;
+    --pico-h4-color: #FAFAF9;
+    --pico-h5-color: #FAFAF9;
+    --pico-h6-color: #F0EDE8;
+    --pico-blockquote-border-color: var(--pico-muted-border-color);
+    --pico-blockquote-footer-color: var(--pico-muted-color);
+    --pico-table-border-color: #303030;
+    --pico-code-background-color: #303030;
+    --pico-code-color: #F0EDE8;
+    --pico-form-element-background-color: #303030;
+    --pico-form-element-selected-background-color: #3B3B3B;
+    --pico-form-element-border-color: #303030;
+    --pico-form-element-color: #F0EDE8;
+    --pico-form-element-placeholder-color: #C5C2BD;
+    --pico-form-element-active-background-color: #262626;
+    --pico-form-element-active-border-color: var(--pico-primary-border);
+    --pico-form-element-focus-color: var(--pico-primary-focus);
+    --pico-switch-background-color: #303030;
+    --pico-switch-checked-background-color: var(--pico-primary-background);
+    --pico-range-border-color: #303030;
+    --pico-range-active-border-color: #3B3B3B;
+    --pico-range-thumb-border-color: var(--pico-background-color);
+    --pico-range-thumb-color: var(--pico-secondary-background);
+    --pico-range-thumb-active-color: var(--pico-primary-background);
+    --pico-accordion-border-color: var(--pico-muted-border-color);
+    --pico-accordion-active-summary-color: var(--pico-primary-hover);
+    --pico-accordion-close-summary-color: var(--pico-color);
+    --pico-accordion-open-summary-color: var(--pico-muted-color);
+    --pico-card-background-color: #262626;
+    --pico-card-border-color: var(--pico-card-background-color);
+    --pico-card-sectioning-background-color: #303030;
+    --pico-dropdown-background-color: #262626;
+    --pico-dropdown-border-color: #303030;
+    --pico-dropdown-color: var(--pico-color);
+    --pico-dropdown-hover-background-color: #3B3B3B;
+    --pico-progress-background-color: #303030;
+  }
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --pico-background-color: #1B1B1B;
+  --pico-color: #F0EDE8;
+  --pico-text-selection-color: rgba(240, 237, 232, 0.18);
+  --pico-muted-color: #C5C2BD;
+  --pico-muted-border-color: #303030;
+  --pico-primary: #F0EDE8;
+  --pico-primary-background: #FAFAF9;
+  --pico-primary-border: var(--pico-primary-background);
+  --pico-primary-underline: rgba(240, 237, 232, 0.5);
+  --pico-primary-hover: #C5C2BD;
+  --pico-primary-hover-background: #C5C2BD;
+  --pico-primary-hover-border: var(--pico-primary-hover-background);
+  --pico-primary-hover-underline: var(--pico-primary-hover);
+  --pico-primary-focus: rgba(240, 237, 232, 0.2);
+  --pico-primary-inverse: #1B1B1B;
+  --pico-secondary: #C5C2BD;
+  --pico-secondary-background: #F0EDE8;
+  --pico-secondary-border: var(--pico-secondary-background);
+  --pico-secondary-underline: rgba(197, 194, 189, 0.5);
+  --pico-secondary-hover: #FAFAF9;
+  --pico-secondary-hover-background: #C5C2BD;
+  --pico-secondary-hover-border: var(--pico-secondary-hover-background);
+  --pico-secondary-hover-underline: var(--pico-secondary-hover);
+  --pico-secondary-focus: rgba(240, 237, 232, 0.2);
+  --pico-secondary-inverse: #1B1B1B;
+  --pico-h1-color: #FAFAF9;
+  --pico-h2-color: #FAFAF9;
+  --pico-h3-color: #FAFAF9;
+  --pico-h4-color: #FAFAF9;
+  --pico-h5-color: #FAFAF9;
+  --pico-h6-color: #F0EDE8;
+  --pico-blockquote-border-color: var(--pico-muted-border-color);
+  --pico-blockquote-footer-color: var(--pico-muted-color);
+  --pico-table-border-color: #303030;
+  --pico-code-background-color: #303030;
+  --pico-code-color: #F0EDE8;
+  --pico-form-element-background-color: #303030;
+  --pico-form-element-selected-background-color: #3B3B3B;
+  --pico-form-element-border-color: #303030;
+  --pico-form-element-color: #F0EDE8;
+  --pico-form-element-placeholder-color: #C5C2BD;
+  --pico-form-element-active-background-color: #262626;
+  --pico-form-element-active-border-color: var(--pico-primary-border);
+  --pico-form-element-focus-color: var(--pico-primary-focus);
+  --pico-switch-background-color: #303030;
+  --pico-switch-checked-background-color: var(--pico-primary-background);
+  --pico-range-border-color: #303030;
+  --pico-range-active-border-color: #3B3B3B;
+  --pico-range-thumb-border-color: var(--pico-background-color);
+  --pico-range-thumb-color: var(--pico-secondary-background);
+  --pico-range-thumb-active-color: var(--pico-primary-background);
+  --pico-accordion-border-color: var(--pico-muted-border-color);
+  --pico-accordion-active-summary-color: var(--pico-primary-hover);
+  --pico-accordion-close-summary-color: var(--pico-color);
+  --pico-accordion-open-summary-color: var(--pico-muted-color);
+  --pico-card-background-color: #262626;
+  --pico-card-border-color: var(--pico-card-background-color);
+  --pico-card-sectioning-background-color: #303030;
+  --pico-dropdown-background-color: #262626;
+  --pico-dropdown-border-color: #303030;
+  --pico-dropdown-color: var(--pico-color);
+  --pico-dropdown-hover-background-color: #3B3B3B;
+  --pico-progress-background-color: #303030;
+}
+
 @media (min-width: 576px) {
   article {
     --pico-block-spacing-vertical: calc(var(--pico-spacing) * 0.75);
@@ -83,19 +287,44 @@ nav li :where(a, [role=link]) {
   margin: 0;
 }
 
-.nav-brand,
-.nav-back-item {
+header > nav {
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nav-brand {
+  min-width: 0;
+}
+
+.nav-home {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-controls,
+.nav-controls > li,
+.nav-brand {
   display: flex;
   align-items: center;
+}
+
+.nav-controls {
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+
+.nav-controls li {
+  padding: 0;
 }
 
 .logo-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.3rem 0.6rem;
-  border-radius: calc(var(--pico-border-radius) * 1.5);
-  background: #f6f8fb;
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 .logo-image {
@@ -104,28 +333,35 @@ nav li :where(a, [role=link]) {
   height: 1.4rem;
 }
 
-.nav-back-item {
-  margin-right: 0.35rem;
+[data-theme="dark"] .logo-image {
+  filter: invert(1);
 }
 
-.nav-back {
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .logo-image {
+    filter: invert(1);
+  }
+}
+
+.nav-theme-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 2.1rem;
   height: 2.1rem;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--pico-muted-border-color);
   color: var(--pico-color);
   text-decoration: none;
 }
 
-.nav-back:hover {
+.nav-theme-toggle:is(:hover, :focus, :active) {
   background: var(--pico-primary-focus);
   border-color: var(--pico-primary-hover-border);
 }
 
-.nav-back svg {
+.nav-theme-toggle svg {
   display: block;
   width: 1rem;
   height: 1rem;
@@ -134,6 +370,129 @@ nav li :where(a, [role=link]) {
   stroke-width: 2.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.nav-theme-toggle {
+  margin: 0;
+  line-height: 0;
+}
+
+.nav-theme-toggle .theme-icon {
+  display: none;
+}
+
+.nav-theme-toggle[data-theme-current="light"] .theme-icon-moon,
+.nav-theme-toggle[data-theme-current="dark"] .theme-icon-sun {
+  display: block;
+}
+
+.nav-menu-mobile {
+  margin-bottom: 0;
+}
+
+.nav-menu-mobile summary {
+  margin-bottom: 0;
+  white-space: nowrap;
+  --pico-form-element-spacing-vertical: 0.45rem;
+  --pico-form-element-spacing-horizontal: 0.85rem;
+}
+
+.nav-menu-mobile ul {
+  min-width: 14rem;
+}
+
+.nav-menu-mobile a[aria-current="page"] {
+  font-weight: 700;
+}
+
+.page-actions-nav {
+  display: none;
+  margin-top: 0.75rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.page-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.page-actions li {
+  padding: 0;
+}
+
+.page-actions .nav-action {
+  margin: 0;
+  white-space: nowrap;
+  --pico-form-element-spacing-vertical: 0.45rem;
+  --pico-form-element-spacing-horizontal: 0.85rem;
+}
+
+.page-actions .nav-action[aria-current="page"] {
+  background: var(--pico-primary-hover);
+  border-color: var(--pico-primary-hover-border);
+  color: var(--pico-primary-inverse);
+}
+
+[data-theme="dark"] #networks {
+  --pico-background-color: var(--pico-card-background-color);
+}
+
+[data-theme="dark"] table:not([role="grid"]) tbody th,
+[data-theme="dark"] table:not([role="grid"]) tbody td {
+  background-color: transparent;
+}
+
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) #networks {
+    --pico-background-color: var(--pico-card-background-color);
+  }
+
+  :root:not([data-theme]) table:not([role="grid"]) tbody th,
+  :root:not([data-theme]) table:not([role="grid"]) tbody td {
+    background-color: transparent;
+  }
+}
+
+@media (max-width: 767px) {
+  header > nav {
+    gap: 0.5rem;
+  }
+
+  .logo-image {
+    height: 1.25rem;
+  }
+
+  .nav-controls {
+    gap: 0.35rem;
+  }
+
+  .nav-controls select {
+    width: 4.5rem;
+    min-width: 4.5rem;
+    margin-bottom: 0;
+    --pico-form-element-spacing-vertical: 0.45rem;
+    --pico-form-element-spacing-horizontal: 0.65rem;
+  }
+
+  .nav-menu-mobile summary {
+    --pico-form-element-spacing-horizontal: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .page-actions-nav {
+    display: block;
+  }
+
+  .nav-menu-mobile-item {
+    display: none !important;
+  }
 }
 
 details>div {

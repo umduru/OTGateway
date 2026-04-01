@@ -1,7 +1,7 @@
 class Lang {
-  constructor(switcher, defaultLocale = null) {
-    if (!(switcher instanceof Object)) {
-      throw new SyntaxError("switcher must be an element object");
+  constructor(switcher = null, defaultLocale = 'ru') {
+    if (switcher !== null && !(switcher instanceof Object)) {
+      throw new SyntaxError("switcher must be an element object or null");
     }
 
     this.switcher = switcher;
@@ -12,21 +12,33 @@ class Lang {
 
   async build() {
     this.bindSwitcher();
-  
-    const userLocale = localStorage.getItem('locale');
-    if (this.localeIsSupported(userLocale)) {
-      await this.setLocale(userLocale);
-  
-    } else {
-      const initialLocale = this.getSuitableLocale(this.browserLocales(true));
-      await this.setLocale(initialLocale);
-    }
 
-    this.translatePage();
+    try {
+      const userLocale = localStorage.getItem('locale');
+      if (this.localeIsSupported(userLocale)) {
+        await this.setLocale(userLocale);
+
+      } else {
+        const initialLocale = this.getSuitableLocale(this.browserLocales(true));
+        await this.setLocale(initialLocale);
+      }
+
+      this.translatePage();
+
+    } finally {
+      if (document.documentElement) {
+        document.documentElement.setAttribute('data-i18n-ready', 'true');
+      }
+    }
   }
 
   bindSwitcher() {
     this.supportedLocales = [];
+    if (!this.switcher) {
+      this.supportedLocales.push(this.defaultLocale);
+      return;
+    }
+
     for (const option of this.switcher.options) {
       this.supportedLocales.push(option.value);
     }
@@ -43,6 +55,10 @@ class Lang {
   }
 
   async setLocale(newLocale) {
+    if (!this.localeIsSupported(newLocale)) {
+      newLocale = this.defaultLocale;
+    }
+
     if (this.currentLocale == newLocale) {
       return;
     }
@@ -57,7 +73,7 @@ class Lang {
       document.documentElement.setAttribute("lang", this.currentLocale);
     }
 
-    if (this.switcher.value != this.currentLocale) {
+    if (this.switcher && this.switcher.value != this.currentLocale) {
       this.switcher.value = this.currentLocale;
     }
   }
@@ -77,6 +93,12 @@ class Lang {
     document
       .querySelectorAll("[data-i18n]")
       .forEach((element) => this.translateElement(element));
+
+    document.dispatchEvent(new CustomEvent('i18n:updated', {
+      detail: {
+        locale: this.currentLocale
+      }
+    }));
   }
   
   translateElement(element) {
@@ -106,7 +128,11 @@ class Lang {
   }
   
   browserLocales(codeOnly = false) {
-    return navigator.languages.map((locale) =>
+    const locales = Array.isArray(navigator.languages) && navigator.languages.length > 0
+      ? navigator.languages
+      : [navigator.language || this.defaultLocale];
+
+    return locales.map((locale) =>
       codeOnly ? locale.split("-")[0] : locale,
     );
   }
@@ -125,4 +151,3 @@ class Lang {
     return result;
   }
 }
-

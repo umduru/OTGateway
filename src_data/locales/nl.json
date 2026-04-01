@@ -6,7 +6,12 @@
       "source": "Broncode",
       "help": "Help",
       "issues": "Problemen & vragen",
-      "releases": "Releases"
+      "releases": "Releases",
+      "menu": "Menu",
+      "theme": {
+        "light": "Schakel naar licht thema",
+        "dark": "Schakel naar donker thema"
+      }
     },
     "dbm": "dBm",
     "kw": "kW",

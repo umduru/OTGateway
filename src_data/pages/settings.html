@@ -1,9 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
     <title data-i18n>settings.title</title>
+    <style>
+      html[data-i18n-ready="false"] body {
+        visibility: hidden;
+      }
+    </style>
+    <script>
+      (() => {
+        document.documentElement.setAttribute('lang', 'ru');
+        document.documentElement.setAttribute('data-i18n-ready', 'false');
+        try {
+          const storedTheme = localStorage.getItem('theme');
+          if (storedTheme === 'light' || storedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', storedTheme);
+            document.documentElement.style.colorScheme = storedTheme;
+          }
+        } catch (error) {}
+      })();
+    </script>
     <link rel="stylesheet" href="/static/app.css?{BUILD_TIME}" />
   </head>
 
@@ -11,13 +30,6 @@
     <header class="container">
       <nav>
         <ul>
-          <li class="nav-back-item">
-            <a class="nav-back" href="/" aria-label="Back to home" title="Back to home">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M15 18l-6-6 6-6"></path>
-              </svg>
-            </a>
-          </li>
           <li class="nav-brand">
             <a class="nav-home" href="/">
               <span class="logo-wrap">
@@ -26,16 +38,46 @@
             </a>
           </li>
         </ul>
-        <ul>
-          <li>
-            <select id="lang" aria-label="Lang">
-              <option value="en" selected>EN</option>
-              <option value="cn">CN</option>
-              <option value="it">IT</option>
-              <option value="nl">NL</option>
-              <option value="ru">RU</option>
-            </select>
+        <ul class="nav-controls">
+          <li class="nav-menu-mobile-item">
+            <details class="dropdown nav-menu-mobile">
+              <summary role="button" class="outline secondary" data-i18n>nav.menu</summary>
+              <ul dir="rtl">
+                <li><a href="/dashboard.html" data-i18n>dashboard.name</a></li>
+                <li><a href="/settings.html" aria-current="page" data-i18n>settings.name</a></li>
+                <li><a href="/sensors.html" data-i18n>sensors.name</a></li>
+                <li><a href="/upgrade.html" data-i18n>upgrade.name</a></li>
+                <li><a href="/network.html" data-i18n>network.name</a></li>
+              </ul>
+            </details>
           </li>
+          <li>
+            <button
+              id="theme-toggle"
+              class="nav-theme-toggle"
+              type="button"
+              data-theme-toggle
+              data-theme-current="light"
+              aria-label="Switch theme"
+              title="Switch theme">
+              <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <circle cx="12" cy="12" r="4"></circle>
+                <path d="M12 2v2.5M12 19.5V22M4.93 4.93l1.77 1.77M17.3 17.3l1.77 1.77M2 12h2.5M19.5 12H22M4.93 19.07l1.77-1.77M17.3 6.7l1.77-1.77"></path>
+              </svg>
+              <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"></path>
+              </svg>
+            </button>
+          </li>
+        </ul>
+      </nav>
+      <nav class="page-actions-nav" aria-label="Quick actions">
+        <ul class="page-actions">
+          <li><a href="/dashboard.html" role="button" class="nav-action" data-i18n>dashboard.name</a></li>
+          <li><a href="/settings.html" role="button" class="nav-action" aria-current="page" data-i18n>settings.name</a></li>
+          <li><a href="/sensors.html" role="button" class="nav-action" data-i18n>sensors.name</a></li>
+          <li><a href="/upgrade.html" role="button" class="nav-action" data-i18n>upgrade.name</a></li>
+          <li><a href="/network.html" role="button" class="nav-action" data-i18n>network.name</a></li>
         </ul>
       </nav>
     </header>
@@ -65,12 +107,12 @@
               </div>
 
               <label>
-                <input type="checkbox" name="portal[auth]" value="true">
+                <input type="checkbox" role="switch" name="portal[auth]" value="true">
                 <span data-i18n>settings.portal.auth</span>
               </label>
 
               <label>
-                <input type="checkbox" name="portal[mdns]" value="true">
+                <input type="checkbox" role="switch" name="portal[mdns]" value="true">
                 <span data-i18n>settings.portal.mdns</span>
               </label>
               <br />
@@ -122,12 +164,12 @@
                 <legend data-i18n>settings.section.diag</legend>
 
                 <label>
-                  <input type="checkbox" name="system[serial][enabled]" value="true">
+                  <input type="checkbox" role="switch" name="system[serial][enabled]" value="true">
                   <span data-i18n>settings.system.serial.enable</span>
                 </label>
 
                 <label>
-                  <input type="checkbox" name="system[telnet][enabled]" value="true">
+                  <input type="checkbox" role="switch" name="system[telnet][enabled]" value="true">
                   <span data-i18n>settings.system.telnet.enable</span>
                 </label>
 
@@ -165,7 +207,7 @@
                   </label>
                 </div>
 
-                <mark data-i18n>settings.note.restart</mark>
+                <span data-i18n>settings.note.restart</span>
               </fieldset>
 
               <button type="submit" data-i18n>button.save</button>
@@ -213,7 +255,7 @@
                 <div>
                   <fieldset>
                     <label>
-                      <input type="checkbox" name="heating[hysteresis][enabled]" value="true">
+                      <input type="checkbox" role="switch" name="heating[hysteresis][enabled]" value="true">
                       <span data-i18n>settings.enable</span>
                     </label>
                   </fieldset>
@@ -352,7 +394,7 @@
 
               <fieldset>
                 <label>
-                  <input type="checkbox" name="emergency[disableBypassRelay]" value="true">
+                  <input type="checkbox" role="switch" name="emergency[disableBypassRelay]" value="true">
                   <span data-i18n>settings.emergency.disableBypassRelay.title</span>
                 </label>
                 <small data-i18n>settings.emergency.disableBypassRelay.note</small>
@@ -385,7 +427,7 @@
             <form action="/api/settings" id="equitherm-settings" class="hidden">
               <fieldset>
                 <label>
-                  <input type="checkbox" name="equitherm[enabled]" value="true">
+                  <input type="checkbox" role="switch" name="equitherm[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
@@ -445,7 +487,7 @@
             <form action="/api/settings" id="pid-settings" class="hidden">
               <fieldset>
                 <label>
-                  <input type="checkbox" name="pid[enabled]" value="true">
+                  <input type="checkbox" role="switch" name="pid[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
               </fieldset>
@@ -502,7 +544,7 @@
                 <div>
                   <fieldset>
                     <label>
-                      <input type="checkbox" name="pid[deadband][enabled]" value="true">
+                      <input type="checkbox" role="switch" name="pid[deadband][enabled]" value="true">
                       <span data-i18n>settings.enable</span>
                     </label>
                   </fieldset>
@@ -604,94 +646,94 @@
 
                   <fieldset>
                     <label>
-                      <input type="checkbox" name="opentherm[options][dhwSupport]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][dhwSupport]" value="true">
                       <span data-i18n>settings.ot.options.dhwSupport</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][coolingSupport]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][coolingSupport]" value="true">
                       <span data-i18n>settings.ot.options.coolingSupport</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][summerWinterMode]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][summerWinterMode]" value="true">
                       <span data-i18n>settings.ot.options.summerWinterMode</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][heatingStateToSummerWinterMode]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][heatingStateToSummerWinterMode]" value="true">
                       <span data-i18n>settings.ot.options.heatingStateToSummerWinterMode</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][ch2AlwaysEnabled]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][ch2AlwaysEnabled]" value="true">
                       <span data-i18n>settings.ot.options.ch2AlwaysEnabled</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][heatingToCh2]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][heatingToCh2]" value="true">
                       <span data-i18n>settings.ot.options.heatingToCh2</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][dhwToCh2]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][dhwToCh2]" value="true">
                       <span data-i18n>settings.ot.options.dhwToCh2</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][dhwBlocking]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][dhwBlocking]" value="true">
                       <span data-i18n>settings.ot.options.dhwBlocking</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][dhwStateAsDhwBlocking]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][dhwStateAsDhwBlocking]" value="true">
                       <span data-i18n>settings.ot.options.dhwStateAsDhwBlocking</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][maxTempSyncWithTargetTemp]" value="true">
                       <span data-i18n>settings.ot.options.maxTempSyncWithTargetTemp</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][getMinMaxTemp]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][getMinMaxTemp]" value="true">
                       <span data-i18n>settings.ot.options.getMinMaxTemp</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][ignoreDiagState]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][ignoreDiagState]" value="true">
                       <span data-i18n>settings.ot.options.ignoreDiagState</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][autoFaultReset]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][autoFaultReset]" value="true">
                       <span data-i18n>settings.ot.options.autoFaultReset</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][autoDiagReset]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][autoDiagReset]" value="true">
                       <span data-i18n>settings.ot.options.autoDiagReset</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][setDateAndTime]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][setDateAndTime]" value="true">
                       <span data-i18n>settings.ot.options.setDateAndTime</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][immergasFix]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][immergasFix]" value="true">
                       <span data-i18n>settings.ot.options.immergasFix</span>
                     </label>
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][alwaysSendIndoorTemp]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][alwaysSendIndoorTemp]" value="true">
                       <span data-i18n>settings.ot.options.alwaysSendIndoorTemp</span>
                     </label>
 
                     <hr />
 
                     <label>
-                      <input type="checkbox" name="opentherm[options][nativeOTC]" value="true">
+                      <input type="checkbox" role="switch" name="opentherm[options][nativeOTC]" value="true">
                       <span data-i18n>settings.ot.nativeOTC.title</span><br />
                       <small data-i18n>settings.ot.nativeOTC.note</small>
                     </label>
@@ -714,12 +756,12 @@
             <form action="/api/settings" id="mqtt-settings" class="hidden">
               <fieldset>
                 <label>
-                  <input type="checkbox" name="mqtt[enabled]" value="true">
+                  <input type="checkbox" role="switch" name="mqtt[enabled]" value="true">
                   <span data-i18n>settings.enable</span>
                 </label>
 
                 <label>
-                  <input type="checkbox" name="mqtt[homeAssistantDiscovery]" value="true">
+                  <input type="checkbox" role="switch" name="mqtt[homeAssistantDiscovery]" value="true">
                   <span data-i18n>settings.mqtt.homeAssistantDiscovery</span>
                 </label>
               </fieldset>
@@ -772,15 +814,14 @@
           <div>
             <div id="extpump-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="extpump-settings" class="hidden">
-              <small data-i18n>settings.modeConflict.note</small>
-
               <fieldset>
                 <label>
-                  <input type="checkbox" name="externalPump[use]" value="true">
+                  <input type="checkbox" role="switch" name="externalPump[use]" value="true">
                   <span data-i18n>settings.extPump.use</span>
                   <br />
                   <small data-i18n>settings.extPump.desc</small>
                 </label>
+                <small data-i18n>settings.modeConflict.note</small>
               </fieldset>
 
               <div class="grid">
@@ -815,15 +856,14 @@
           <div>
             <div id="cc-settings-busy" aria-busy="true"></div>
             <form action="/api/settings" id="cc-settings" class="hidden">
-              <small data-i18n>settings.modeConflict.note</small>
-
               <fieldset>
                 <label>
-                  <input type="checkbox" name="cascadeControl[output][enabled]" value="true">
+                  <input type="checkbox" role="switch" name="cascadeControl[output][enabled]" value="true">
                   <span data-i18n>settings.cascadeControl.output.enable</span>
                   <br />
                   <small data-i18n>settings.cascadeControl.output.desc</small>
                 </label>
+                <small data-i18n>settings.modeConflict.note</small>
               </fieldset>
 
               <div class="grid">
@@ -837,17 +877,17 @@
                 <legend data-i18n>settings.cascadeControl.output.events.desc</legend>
 
                 <label>
-                  <input type="checkbox" name="cascadeControl[output][onFault]" value="true">
+                  <input type="checkbox" role="switch" name="cascadeControl[output][onFault]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onFault</span>
                 </label>
 
                 <label>
-                  <input type="checkbox" name="cascadeControl[output][onLossConnection]" value="true">
+                  <input type="checkbox" role="switch" name="cascadeControl[output][onLossConnection]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onLossConnection</span>
                 </label>
 
                 <label>
-                  <input type="checkbox" name="cascadeControl[output][onEnabledHeating]" value="true">
+                  <input type="checkbox" role="switch" name="cascadeControl[output][onEnabledHeating]" value="true">
                   <span data-i18n>settings.cascadeControl.output.events.onEnabledHeating</span>
                 </label>
               </fieldset>
@@ -875,7 +915,7 @@
     <script src="/static/chart.js?{BUILD_TIME}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
-        const lang = new Lang(document.getElementById('lang'));
+        const lang = new Lang(document.getElementById('lang'), 'ru');
         await lang.build();
 
         let etChart = null;
