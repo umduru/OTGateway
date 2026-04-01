@@ -1,5 +1,5 @@
 :root:not([data-theme]),
-[data-theme="light"] {
+:root[data-theme="light"] {
   color-scheme: light;
   --pico-background-color: #E4E4E4;
   --pico-color: #0F1217;
@@ -16,11 +16,11 @@
   --pico-primary-hover-underline: var(--pico-primary-hover);
   --pico-primary-focus: rgba(15, 18, 23, 0.2);
   --pico-primary-inverse: #E4E4E4;
-  --pico-secondary: #3A3D42;
-  --pico-secondary-background: #0F1217;
+  --pico-secondary: #0F1217;
+  --pico-secondary-background: #050506;
   --pico-secondary-border: var(--pico-secondary-background);
-  --pico-secondary-underline: rgba(58, 61, 66, 0.5);
-  --pico-secondary-hover: #0F1217;
+  --pico-secondary-underline: rgba(15, 18, 23, 0.5);
+  --pico-secondary-hover: #3A3D42;
   --pico-secondary-hover-background: #3A3D42;
   --pico-secondary-hover-border: var(--pico-secondary-hover-background);
   --pico-secondary-hover-underline: var(--pico-secondary-hover);
@@ -64,6 +64,58 @@
   --pico-dropdown-color: var(--pico-color);
   --pico-dropdown-hover-background-color: #C4C4C4;
   --pico-progress-background-color: #CFCFCF;
+}
+
+:root:not([data-theme]) :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary:not(.outline),
+:root[data-theme="light"] :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary:not(.outline) {
+  background-color: var(--pico-secondary-background);
+  border-color: var(--pico-secondary-border);
+  color: var(--pico-secondary-inverse);
+}
+
+:root:not([data-theme]) :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary:not(.outline):is(:hover, :focus, :active),
+:root[data-theme="light"] :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary:not(.outline):is(:hover, :focus, :active) {
+  background-color: var(--pico-secondary-hover-background);
+  border-color: var(--pico-secondary-hover-border);
+  color: var(--pico-secondary-inverse);
+}
+
+:root:not([data-theme]) :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary.outline,
+:root[data-theme="light"] :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary.outline {
+  background-color: transparent;
+  border-color: var(--pico-secondary-border);
+  color: var(--pico-secondary);
+}
+
+:root:not([data-theme]) :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary.outline:is(:hover, :focus, :active),
+:root[data-theme="light"] :is(button, [type="submit"], [type="button"], [type="reset"], [role="button"]).secondary.outline:is(:hover, :focus, :active) {
+  background-color: var(--pico-secondary-hover-background);
+  border-color: var(--pico-secondary-hover-border);
+  color: var(--pico-secondary-inverse);
+}
+
+:is(button, [type="submit"], [type="button"], [type="reset"], [role="button"], summary[role="button"]) {
+  border-radius: 0.625rem;
+}
+
+[type="file"]::file-selector-button {
+  border-radius: 0.625rem;
+}
+
+:where(select, textarea),
+input:not([type="submit"], [type="button"], [type="reset"], [type="checkbox"], [type="radio"], [type="range"]) {
+  --pico-border-radius: 0.5rem;
+  border-radius: var(--pico-border-radius);
+}
+
+article,
+details.dropdown {
+  --pico-border-radius: 0.75rem;
+}
+
+article,
+details.dropdown > summary + ul {
+  border-radius: var(--pico-border-radius);
 }
 
 @media only screen and (prefers-color-scheme: dark) {
@@ -439,6 +491,13 @@ header > nav {
   color: var(--pico-primary-inverse);
 }
 
+:root:not([data-theme]) .page-actions .nav-action[aria-current="page"],
+:root[data-theme="light"] .page-actions .nav-action[aria-current="page"] {
+  background: var(--pico-primary-background);
+  border-color: var(--pico-primary-border);
+  color: var(--pico-primary-inverse);
+}
+
 [data-theme="dark"] #networks {
   --pico-background-color: var(--pico-card-background-color);
 }
@@ -548,6 +607,7 @@ tr.network:hover {
     "thermostat-control thermostat-control thermostat-control";
 
   border: .25rem solid var(--pico-blockquote-border-color);
+  border-radius: 0.75rem;
   padding: 0.5rem;
 }
 
@@ -651,6 +711,46 @@ tr.network:hover {
   grid-area: thermostat-control;
 
   margin: 1.25rem 0;
+}
+
+:root:not([data-theme]) .tAction.outline,
+:root[data-theme="light"] .tAction.outline {
+  background-color: var(--pico-primary-background);
+  border-color: var(--pico-primary-border);
+  color: var(--pico-primary-inverse);
+}
+
+:root:not([data-theme]) .tAction.outline:is(:hover, :focus, :active),
+:root[data-theme="light"] .tAction.outline:is(:hover, :focus, :active) {
+  background-color: var(--pico-primary-hover-background);
+  border-color: var(--pico-primary-hover-border);
+  color: var(--pico-primary-inverse);
+}
+
+[data-theme="dark"] .tAction.outline,
+[data-theme="dark"] .tAction.outline:is(:hover, :focus, :active) {
+  background-color: var(--pico-primary-background);
+  border-color: var(--pico-primary-border);
+  color: var(--pico-primary-inverse);
+}
+
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .tAction.outline,
+  :root:not([data-theme]) .tAction.outline:is(:hover, :focus, :active) {
+    background-color: var(--pico-primary-background);
+    border-color: var(--pico-primary-border);
+    color: var(--pico-primary-inverse);
+  }
+}
+
+[data-theme="dark"] [type="checkbox"][role="switch"]:checked::before {
+  background-color: var(--pico-primary-inverse);
+}
+
+@media only screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme]) [type="checkbox"][role="switch"]:checked::before {
+    background-color: var(--pico-primary-inverse);
+  }
 }
 
 .form-error {
