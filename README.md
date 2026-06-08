@@ -1,7 +1,7 @@
 # OpenTherm Gateway by umdu
 
 Форк [Laxilef/OTGateway](https://github.com/Laxilef/OTGateway), 
-доработанный под плату umdu_ot (esp32-s3-devkitc1-n16r8). 
+доработанный под плату umdu_ot на базе модуля ESP32-S3-WROOM-1 N16R8. 
 Не переписан с нуля — взята рабочая база и адаптирована под конкретное железо 
 и сценарии использования.
 
@@ -60,7 +60,8 @@ pio run --environment umdu_ot --target uploadfs
 
 ### Ручная прошивка локальных bin
 
-Для `umdu_ot` используется плата `esp32-s3-devkitc1-n16r8`.
+Для сборки `umdu_ot` используется PlatformIO-профиль
+`esp32-s3-devkitc1-n16r8`, совместимый с модулем ESP32-S3-WROOM-1 N16R8.
 Таблица разделов задается явно в `platformio.ini`:
 `board_build.partitions = default_16MB.csv`.
 Если шить через `esptool`, брать offset файловой системы нужно из этой таблицы
@@ -72,7 +73,7 @@ pio run --environment umdu_ot --target uploadfs
 ```text
 app0    0x10000   6400K
 app1    0x650000  6400K
-spiffs  0xc90000  3456K   # LittleFS image
+spiffs  0xc90000  3456K
 ```
 
 Минимальная ручная прошивка чистого устройства:
