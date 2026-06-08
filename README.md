@@ -58,6 +58,46 @@ pio run --environment umdu_ot --target upload
 pio run --environment umdu_ot --target uploadfs
 ```
 
+### Ручная прошивка локальных bin
+
+Для `umdu_ot` используется плата `esp32-s3-devkitc1-n16r8`.
+Таблица разделов задается явно в `platformio.ini`:
+`board_build.partitions = default_16MB.csv`.
+Если шить через `esptool`, брать offset файловой системы нужно из этой таблицы
+или из сгенерированной `.pio/build/umdu_ot/partitions.bin`, а не из
+`esp32_partitions.csv`, который для `umdu_ot` не используется.
+
+Текущая таблица разделов для `umdu_ot`:
+
+```text
+app0    0x10000   6400K
+app1    0x650000  6400K
+spiffs  0xc90000  3456K   # LittleFS image
+```
+
+Минимальная ручная прошивка чистого устройства:
+
+```bash
+cd software/otgateway/upstream
+
+.pio/penv/bin/esptool --chip esp32s3 --port <PORT> --baud 921600 \
+  --before no-reset --after no-reset erase-flash
+
+.pio/penv/bin/esptool --chip esp32s3 --port <PORT> --baud 921600 \
+  --before no-reset --after hard-reset write-flash -z \
+  --flash-mode dio --flash-freq 80m --flash-size 16MB \
+  0x0 build/firmware_umdu_ot_<version>.factory.bin \
+  0xc90000 build/filesystem_umdu_ot_<version>.bin
+```
+
+Если артефакты перенесены в релизную папку монорепо, из
+`software/otgateway/upstream` путь будет:
+
+```bash
+../../../firmware/otgateway/<version>/firmware_umdu_ot_<version>.factory.bin
+../../../firmware/otgateway/<version>/filesystem_umdu_ot_<version>.bin
+```
+
 ## Документация
 
 Актуальная документация по эксплуатации — на [docs.umdu.ru](https://docs.umdu.ru).  
