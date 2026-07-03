@@ -85,11 +85,21 @@ cd software/otgateway/upstream
   --before no-reset --after no-reset erase-flash
 
 .pio/penv/bin/esptool --chip esp32s3 --port <PORT> --baud 921600 \
-  --before no-reset --after hard-reset write-flash -z \
+  --before no-reset --after watchdog-reset write-flash -z \
   --flash-mode dio --flash-freq 80m --flash-size 16MB \
   0x0 build/firmware_umdu_ot_<version>.factory.bin \
   0xc90000 build/filesystem_umdu_ot_<version>.bin
 ```
+
+При переходе с тестовой прошивки, другой таблицы разделов или неизвестного
+содержимого Flash сначала обязательно выполнять `erase-flash`. Запись только
+обычного `firmware_*.bin` по адресу `0x10000` не заменяет загрузчик и таблицу
+разделов.
+
+Для встроенного USB Serial/JTAG ESP32-S3 после ручного входа в ROM-загрузчик
+используется `--after watchdog-reset`: обычный `hard-reset` может оставить
+чип в download mode. Если порт не восстановился, кратко нажать `RESET` без
+удержания `BOOT` или переподключить питание.
 
 Если артефакты перенесены в релизную папку монорепо, из
 `software/otgateway/upstream` путь будет:
